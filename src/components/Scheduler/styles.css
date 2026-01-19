@@ -7,77 +7,80 @@
 
 /* ============================================
    CSS Custom Properties (Design Tokens)
+   
+   All variables are prefixed to avoid conflicts with host projects.
+   These are scoped to :root but use unique names to prevent collisions.
    ============================================ */
 :root {
   /* Colors - Stone palette */
-  --color-stone-50: #fafaf9;
-  --color-stone-100: #f5f5f4;
-  --color-stone-200: #e7e5e4;
-  --color-stone-300: #d6d3d1;
-  --color-stone-400: #a8a29e;
-  --color-stone-500: #78716c;
-  --color-stone-600: #57534e;
-  --color-stone-700: #44403c;
-  --color-stone-800: #292524;
-  --color-stone-900: #1c1917;
+  --scheduler-color-stone-50: #fafaf9;
+  --scheduler-color-stone-100: #f5f5f4;
+  --scheduler-color-stone-200: #e7e5e4;
+  --scheduler-color-stone-300: #d6d3d1;
+  --scheduler-color-stone-400: #a8a29e;
+  --scheduler-color-stone-500: #78716c;
+  --scheduler-color-stone-600: #57534e;
+  --scheduler-color-stone-700: #44403c;
+  --scheduler-color-stone-800: #292524;
+  --scheduler-color-stone-900: #1c1917;
 
   /* Colors - Rose palette */
-  --color-rose-50: #fff1f2;
-  --color-rose-100: #ffe4e6;
-  --color-rose-200: #fecdd3;
-  --color-rose-300: #fda4af;
-  --color-rose-400: #fb7185;
-  --color-rose-500: #f43f5e;
-  --color-rose-600: #e11d48;
-  --color-rose-700: #be123c;
-  --color-rose-900: #881337;
+  --scheduler-color-rose-50: #fff1f2;
+  --scheduler-color-rose-100: #ffe4e6;
+  --scheduler-color-rose-200: #fecdd3;
+  --scheduler-color-rose-300: #fda4af;
+  --scheduler-color-rose-400: #fb7185;
+  --scheduler-color-rose-500: #f43f5e;
+  --scheduler-color-rose-600: #e11d48;
+  --scheduler-color-rose-700: #be123c;
+  --scheduler-color-rose-900: #881337;
 
   /* Colors - Violet palette */
-  --color-violet-50: #f5f3ff;
-  --color-violet-100: #ede9fe;
-  --color-violet-300: #c4b5fd;
-  --color-violet-400: #a78bfa;
-  --color-violet-900: #4c1d95;
+  --scheduler-color-violet-50: #f5f3ff;
+  --scheduler-color-violet-100: #ede9fe;
+  --scheduler-color-violet-300: #c4b5fd;
+  --scheduler-color-violet-400: #a78bfa;
+  --scheduler-color-violet-900: #4c1d95;
 
   /* Colors - Amber palette */
-  --color-amber-50: #fffbeb;
-  --color-amber-100: #fef3c7;
-  --color-amber-300: #fcd34d;
-  --color-amber-400: #fbbf24;
-  --color-amber-900: #78350f;
+  --scheduler-color-amber-50: #fffbeb;
+  --scheduler-color-amber-100: #fef3c7;
+  --scheduler-color-amber-300: #fcd34d;
+  --scheduler-color-amber-400: #fbbf24;
+  --scheduler-color-amber-900: #78350f;
 
   /* Colors - Emerald palette */
-  --color-emerald-50: #ecfdf5;
-  --color-emerald-100: #d1fae5;
-  --color-emerald-300: #6ee7b7;
-  --color-emerald-400: #34d399;
-  --color-emerald-900: #064e3b;
+  --scheduler-color-emerald-50: #ecfdf5;
+  --scheduler-color-emerald-100: #d1fae5;
+  --scheduler-color-emerald-300: #6ee7b7;
+  --scheduler-color-emerald-400: #34d399;
+  --scheduler-color-emerald-900: #064e3b;
 
   /* Colors - Red palette */
-  --color-red-50: #fef2f2;
-  --color-red-200: #fecaca;
-  --color-red-300: #fca5a5;
-  --color-red-500: #ef4444;
-  --color-red-600: #dc2626;
-  --color-red-800: #991b1b;
+  --scheduler-color-red-50: #fef2f2;
+  --scheduler-color-red-200: #fecaca;
+  --scheduler-color-red-300: #fca5a5;
+  --scheduler-color-red-500: #ef4444;
+  --scheduler-color-red-600: #dc2626;
+  --scheduler-color-red-800: #991b1b;
 
   /* Scheduler-specific variables */
-  --slot-height: 60px;
-  --time-column-width: 80px;
-  --border-radius-sm: 0.375rem;
-  --border-radius-md: 0.5rem;
-  --border-radius-lg: 0.75rem;
-  --border-radius-xl: 1rem;
-  --border-radius-2xl: 1.5rem;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  --transition-fast: 150ms ease-out;
-  --transition-normal: 200ms ease-out;
-  --transition-slow: 300ms ease-out;
+  --scheduler-slot-height: 60px;
+  --scheduler-time-column-width: 80px;
+  --scheduler-border-radius-sm: 0.375rem;
+  --scheduler-border-radius-md: 0.5rem;
+  --scheduler-border-radius-lg: 0.75rem;
+  --scheduler-border-radius-xl: 1rem;
+  --scheduler-border-radius-2xl: 1.5rem;
+  --scheduler-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --scheduler-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --scheduler-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --scheduler-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --scheduler-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --scheduler-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --scheduler-transition-fast: 150ms ease-out;
+  --scheduler-transition-normal: 200ms ease-out;
+  --scheduler-transition-slow: 300ms ease-out;
 }
 
 /* ============================================
@@ -88,9 +91,9 @@
   flex-direction: column;
   height: 100%;
   background-color: white;
-  border-radius: var(--border-radius-xl);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-stone-200);
+  border-radius: var(--scheduler-border-radius-xl);
+  box-shadow: var(--scheduler-shadow-sm);
+  border: 1px solid var(--scheduler-color-stone-200);
   overflow: hidden;
 }
 
@@ -102,7 +105,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--color-stone-200);
+  border-bottom: 1px solid var(--scheduler-color-stone-200);
   background-color: rgba(250, 250, 249, 0.5);
 }
 
@@ -114,15 +117,15 @@
 
 .scheduler-nav-btn {
   padding: 0.5rem;
-  border-radius: var(--border-radius-lg);
-  color: var(--color-stone-600);
-  transition: background-color var(--transition-fast);
+  border-radius: var(--scheduler-border-radius-lg);
+  color: var(--scheduler-color-stone-600);
+  transition: background-color var(--scheduler-transition-fast);
   background: none;
   border: none;
 }
 
 .scheduler-nav-btn:hover {
-  background-color: var(--color-stone-100);
+  background-color: var(--scheduler-color-stone-100);
 }
 
 .scheduler-nav-btn svg {
@@ -136,16 +139,16 @@
   text-align: center;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-stone-700);
-  border-radius: var(--border-radius-lg);
-  transition: background-color var(--transition-fast);
+  color: var(--scheduler-color-stone-700);
+  border-radius: var(--scheduler-border-radius-lg);
+  transition: background-color var(--scheduler-transition-fast);
   cursor: pointer;
   background: none;
   border: none;
 }
 
 .scheduler-nav-label:hover {
-  background-color: var(--color-stone-100);
+  background-color: var(--scheduler-color-stone-100);
 }
 
 .scheduler-controls {
@@ -159,19 +162,19 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.375rem 1rem;
-  background-color: var(--color-rose-500);
+  background-color: var(--scheduler-color-rose-500);
   color: white;
   font-size: 0.875rem;
   font-weight: 500;
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--scheduler-border-radius-lg);
   border: none;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
+  transition: all var(--scheduler-transition-fast);
+  box-shadow: var(--scheduler-shadow-sm);
 }
 
 .scheduler-create-btn:hover {
-  background-color: var(--color-rose-600);
-  box-shadow: var(--shadow);
+  background-color: var(--scheduler-color-rose-600);
+  box-shadow: var(--scheduler-shadow);
 }
 
 .scheduler-create-btn svg {
@@ -184,8 +187,8 @@
    ============================================ */
 .view-toggle {
   display: inline-flex;
-  background-color: var(--color-stone-100);
-  border-radius: var(--border-radius-lg);
+  background-color: var(--scheduler-color-stone-100);
+  border-radius: var(--scheduler-border-radius-lg);
   padding: 0.25rem;
 }
 
@@ -193,21 +196,21 @@
   padding: 0.375rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  border-radius: var(--border-radius-md);
-  transition: all var(--transition-normal);
+  border-radius: var(--scheduler-border-radius-md);
+  transition: all var(--scheduler-transition-normal);
   background: none;
   border: none;
-  color: var(--color-stone-500);
+  color: var(--scheduler-color-stone-500);
 }
 
 .view-toggle-btn:hover {
-  color: var(--color-stone-700);
+  color: var(--scheduler-color-stone-700);
 }
 
 .view-toggle-btn.active {
   background-color: white;
-  color: var(--color-stone-900);
-  box-shadow: var(--shadow-sm);
+  color: var(--scheduler-color-stone-900);
+  box-shadow: var(--scheduler-shadow-sm);
 }
 
 /* ============================================
@@ -231,7 +234,7 @@
 .view-header {
   flex-shrink: 0;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--color-stone-200);
+  border-bottom: 1px solid var(--scheduler-color-stone-200);
   background-color: white;
 }
 
@@ -245,15 +248,15 @@
 .view-header-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-stone-800);
+  color: var(--scheduler-color-stone-800);
 }
 
 .today-badge {
   padding: 0.125rem 0.5rem;
   font-size: 0.75rem;
   font-weight: 500;
-  background-color: var(--color-rose-100);
-  color: var(--color-rose-700);
+  background-color: var(--scheduler-color-rose-100);
+  color: var(--scheduler-color-rose-700);
   border-radius: 9999px;
 }
 
@@ -274,15 +277,15 @@
   position: sticky;
   left: 0;
   z-index: 20;
-  background-color: var(--color-stone-50);
-  border-right: 1px solid var(--color-stone-200);
+  background-color: var(--scheduler-color-stone-50);
+  border-right: 1px solid var(--scheduler-color-stone-200);
   flex-shrink: 0;
   width: 80px;
 }
 
 .time-column-spacer {
   height: 48px;
-  border-bottom: 1px solid var(--color-stone-200);
+  border-bottom: 1px solid var(--scheduler-color-stone-200);
 }
 
 .time-slot-label {
@@ -296,7 +299,7 @@
 .time-slot-label span {
   font-size: 0.75rem;
   font-weight: 500;
-  color: var(--color-stone-500);
+  color: var(--scheduler-color-stone-500);
   margin-top: -0.5rem;
   user-select: none;
 }
@@ -306,7 +309,7 @@
   top: 0;
   right: 0;
   width: 0.75rem;
-  border-top: 1px solid var(--color-stone-300);
+  border-top: 1px solid var(--scheduler-color-stone-300);
 }
 
 /* ============================================
@@ -321,8 +324,8 @@
 .tech-column {
   flex: 1;
   min-width: 120px;
-  border-right: 1px solid var(--color-stone-200);
-  transition: background-color var(--transition-fast);
+  border-right: 1px solid var(--scheduler-color-stone-200);
+  transition: background-color var(--scheduler-transition-fast);
 }
 
 .day-column:last-child,
@@ -345,12 +348,12 @@
   z-index: 10;
   padding: 0.5rem;
   text-align: center;
-  border-bottom: 1px solid var(--color-stone-200);
+  border-bottom: 1px solid var(--scheduler-color-stone-200);
   background-color: white;
 }
 
 .column-header.today {
-  background-color: var(--color-rose-50);
+  background-color: var(--scheduler-color-rose-50);
 }
 
 .column-header.drag-over {
@@ -360,23 +363,23 @@
 .column-header-text {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-stone-700);
+  color: var(--scheduler-color-stone-700);
 }
 
 .column-header-text.today {
-  color: var(--color-rose-700);
+  color: var(--scheduler-color-rose-700);
 }
 
 .tech-header-text {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-stone-800);
+  color: var(--scheduler-color-stone-800);
 }
 
 .today-dot {
   width: 0.375rem;
   height: 0.375rem;
-  background-color: var(--color-rose-400);
+  background-color: var(--scheduler-color-rose-400);
   border-radius: 50%;
   margin: 0.25rem auto 0;
 }
@@ -387,19 +390,19 @@
 }
 
 .column-header.in-selected-range {
-  background-color: var(--color-rose-100);
-  border-bottom-color: var(--color-rose-200);
+  background-color: var(--scheduler-color-rose-100);
+  border-bottom-color: var(--scheduler-color-rose-200);
 }
 
 .column-header-text.in-selected-range {
-  color: var(--color-rose-700);
+  color: var(--scheduler-color-rose-700);
   font-weight: 600;
 }
 
 .selected-range-dot {
   width: 0.375rem;
   height: 0.375rem;
-  background-color: var(--color-rose-300);
+  background-color: var(--scheduler-color-rose-300);
   border-radius: 50%;
   margin: 0.25rem auto 0;
 }
@@ -412,13 +415,13 @@
 }
 
 .grid-slot {
-  border-bottom: 1px solid var(--color-stone-200);
+  border-bottom: 1px solid var(--scheduler-color-stone-200);
   transition: background-color 100ms;
   cursor: pointer;
 }
 
 .grid-slot.hour-start {
-  border-bottom-color: var(--color-stone-300);
+  border-bottom-color: var(--scheduler-color-stone-300);
 }
 
 .grid-slot:hover {
@@ -438,9 +441,9 @@
   position: absolute;
   border-left-width: 4px;
   border-left-style: solid;
-  border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-fast);
+  border-radius: 0 var(--scheduler-border-radius-lg) var(--scheduler-border-radius-lg) 0;
+  box-shadow: var(--scheduler-shadow-sm);
+  transition: all var(--scheduler-transition-fast);
   overflow: hidden;
   pointer-events: auto;
   cursor: pointer;
@@ -452,13 +455,13 @@
 
 .appointment-block.dragging {
   opacity: 0.7;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--scheduler-shadow-lg);
   transform: scale(1.02);
   cursor: grabbing;
 }
 
 .appointment-block.selected {
-  box-shadow: 0 0 0 2px var(--color-stone-400), 0 0 0 4px rgba(168, 162, 158, 0.2);
+  box-shadow: 0 0 0 2px var(--scheduler-color-stone-400), 0 0 0 4px rgba(168, 162, 158, 0.2);
 }
 
 .appointment-content {
@@ -522,59 +525,59 @@
 
 /* Service type colors */
 .service-classic {
-  background-color: var(--color-rose-50);
-  border-left-color: var(--color-rose-300);
-  color: var(--color-rose-900);
+  background-color: var(--scheduler-color-rose-50);
+  border-left-color: var(--scheduler-color-rose-300);
+  color: var(--scheduler-color-rose-900);
 }
 
 .service-classic:hover {
-  background-color: var(--color-rose-100);
+  background-color: var(--scheduler-color-rose-100);
 }
 
 .service-classic .appointment-badge-dot {
-  background-color: var(--color-rose-400);
+  background-color: var(--scheduler-color-rose-400);
 }
 
 .service-hybrid {
-  background-color: var(--color-violet-50);
-  border-left-color: var(--color-violet-300);
-  color: var(--color-violet-900);
+  background-color: var(--scheduler-color-violet-50);
+  border-left-color: var(--scheduler-color-violet-300);
+  color: var(--scheduler-color-violet-900);
 }
 
 .service-hybrid:hover {
-  background-color: var(--color-violet-100);
+  background-color: var(--scheduler-color-violet-100);
 }
 
 .service-hybrid .appointment-badge-dot {
-  background-color: var(--color-violet-400);
+  background-color: var(--scheduler-color-violet-400);
 }
 
 .service-volume {
-  background-color: var(--color-amber-50);
-  border-left-color: var(--color-amber-300);
-  color: var(--color-amber-900);
+  background-color: var(--scheduler-color-amber-50);
+  border-left-color: var(--scheduler-color-amber-300);
+  color: var(--scheduler-color-amber-900);
 }
 
 .service-volume:hover {
-  background-color: var(--color-amber-100);
+  background-color: var(--scheduler-color-amber-100);
 }
 
 .service-volume .appointment-badge-dot {
-  background-color: var(--color-amber-400);
+  background-color: var(--scheduler-color-amber-400);
 }
 
 .service-refill {
-  background-color: var(--color-emerald-50);
-  border-left-color: var(--color-emerald-300);
-  color: var(--color-emerald-900);
+  background-color: var(--scheduler-color-emerald-50);
+  border-left-color: var(--scheduler-color-emerald-300);
+  color: var(--scheduler-color-emerald-900);
 }
 
 .service-refill:hover {
-  background-color: var(--color-emerald-100);
+  background-color: var(--scheduler-color-emerald-100);
 }
 
 .service-refill .appointment-badge-dot {
-  background-color: var(--color-emerald-400);
+  background-color: var(--scheduler-color-emerald-400);
 }
 
 /* ============================================
@@ -582,8 +585,8 @@
    ============================================ */
 .drag-overlay {
   padding: 0.5rem 0.75rem;
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-xl);
+  border-radius: var(--scheduler-border-radius-lg);
+  box-shadow: var(--scheduler-shadow-xl);
   border-left: 4px solid;
   opacity: 0.9;
 }
@@ -625,8 +628,8 @@
 .modal-content {
   position: relative;
   background-color: white;
-  border-radius: var(--border-radius-2xl);
-  box-shadow: var(--shadow-2xl);
+  border-radius: var(--scheduler-border-radius-2xl);
+  box-shadow: var(--scheduler-shadow-2xl);
   max-width: 28rem;
   width: 100%;
   max-height: 90vh;
@@ -641,7 +644,7 @@
 
 .modal-header-strip {
   height: 0.5rem;
-  border-radius: var(--border-radius-2xl) var(--border-radius-2xl) 0 0;
+  border-radius: var(--scheduler-border-radius-2xl) var(--scheduler-border-radius-2xl) 0 0;
 }
 
 .modal-close-btn {
@@ -650,16 +653,16 @@
   right: 1rem;
   padding: 0.5rem;
   border-radius: 50%;
-  color: var(--color-stone-400);
+  color: var(--scheduler-color-stone-400);
   background: none;
   border: none;
-  transition: all var(--transition-fast);
+  transition: all var(--scheduler-transition-fast);
   z-index: 10;
 }
 
 .modal-close-btn:hover {
-  color: var(--color-stone-600);
-  background-color: var(--color-stone-100);
+  color: var(--scheduler-color-stone-600);
+  background-color: var(--scheduler-color-stone-100);
 }
 
 .modal-close-btn svg {
@@ -674,13 +677,13 @@
 .modal-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-stone-900);
+  color: var(--scheduler-color-stone-900);
   margin-bottom: 1.25rem;
 }
 
 .modal-colored-header {
   padding: 1rem 1.5rem;
-  border-radius: var(--border-radius-2xl) var(--border-radius-2xl) 0 0;
+  border-radius: var(--scheduler-border-radius-2xl) var(--scheduler-border-radius-2xl) 0 0;
   border-bottom: 1px solid;
 }
 
@@ -707,7 +710,7 @@
   max-width: 100%;
   z-index: 40;
   transform: translateX(100%);
-  transition: transform var(--transition-slow);
+  transition: transform var(--scheduler-transition-slow);
 }
 
 .side-panel.open {
@@ -717,8 +720,8 @@
 .side-panel-content {
   height: 100%;
   background-color: white;
-  box-shadow: var(--shadow-2xl);
-  border-left: 1px solid var(--color-stone-200);
+  box-shadow: var(--scheduler-shadow-2xl);
+  border-left: 1px solid var(--scheduler-color-stone-200);
   display: flex;
   flex-direction: column;
   outline: none;
@@ -734,14 +737,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  border-bottom: 1px solid var(--color-stone-200);
+  border-bottom: 1px solid var(--scheduler-color-stone-200);
   flex-shrink: 0;
 }
 
 .panel-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-stone-900);
+  color: var(--scheduler-color-stone-900);
 }
 
 .panel-body {
@@ -761,12 +764,12 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--color-stone-700);
+  color: var(--scheduler-color-stone-700);
   margin-bottom: 0.375rem;
 }
 
 .form-label .required {
-  color: var(--color-rose-500);
+  color: var(--scheduler-color-rose-500);
 }
 
 .form-input,
@@ -774,10 +777,10 @@
 .form-textarea {
   width: 100%;
   padding: 0.625rem 1rem;
-  border: 1px solid var(--color-stone-300);
-  border-radius: var(--border-radius-xl);
+  border: 1px solid var(--scheduler-color-stone-300);
+  border-radius: var(--scheduler-border-radius-xl);
   font-size: 0.875rem;
-  transition: all var(--transition-fast);
+  transition: all var(--scheduler-transition-fast);
   background-color: white;
 }
 
@@ -785,15 +788,15 @@
 .form-select:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: var(--color-rose-300);
-  box-shadow: 0 0 0 3px var(--color-rose-200);
+  border-color: var(--scheduler-color-rose-300);
+  box-shadow: 0 0 0 3px var(--scheduler-color-rose-200);
 }
 
 .form-input.sm,
 .form-select.sm,
 .form-textarea.sm {
   padding: 0.5rem 0.75rem;
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--scheduler-border-radius-lg);
 }
 
 .form-textarea {
@@ -815,16 +818,16 @@
 
 .service-option {
   padding: 0.75rem 1rem;
-  border: 2px solid var(--color-stone-200);
-  border-radius: var(--border-radius-xl);
+  border: 2px solid var(--scheduler-color-stone-200);
+  border-radius: var(--scheduler-border-radius-xl);
   text-align: left;
-  transition: all var(--transition-fast);
+  transition: all var(--scheduler-transition-fast);
   background: none;
   cursor: pointer;
 }
 
 .service-option:hover {
-  border-color: var(--color-stone-300);
+  border-color: var(--scheduler-color-stone-300);
 }
 
 .service-option.selected {
@@ -840,7 +843,7 @@
 .service-option-duration {
   display: block;
   font-size: 0.75rem;
-  color: var(--color-stone-400);
+  color: var(--scheduler-color-stone-400);
   margin-top: 0.125rem;
 }
 
@@ -859,9 +862,9 @@
   padding: 0.625rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  border-radius: var(--border-radius-xl);
+  border-radius: var(--scheduler-border-radius-xl);
   border: none;
-  transition: all var(--transition-fast);
+  transition: all var(--scheduler-transition-fast);
   cursor: pointer;
 }
 
@@ -871,14 +874,14 @@
 }
 
 .btn-primary {
-  background-color: var(--color-rose-500);
+  background-color: var(--scheduler-color-rose-500);
   color: white;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--scheduler-shadow-sm);
 }
 
 .btn-primary:hover {
-  background-color: var(--color-rose-600);
-  box-shadow: var(--shadow);
+  background-color: var(--scheduler-color-rose-600);
+  box-shadow: var(--scheduler-shadow);
 }
 
 .btn-primary:disabled {
@@ -887,52 +890,52 @@
 }
 
 .btn-secondary {
-  background-color: var(--color-stone-100);
-  color: var(--color-stone-700);
+  background-color: var(--scheduler-color-stone-100);
+  color: var(--scheduler-color-stone-700);
 }
 
 .btn-secondary:hover {
-  background-color: var(--color-stone-200);
+  background-color: var(--scheduler-color-stone-200);
 }
 
 .btn-outline {
   background: none;
-  border: 1px solid var(--color-stone-300);
-  color: var(--color-stone-600);
+  border: 1px solid var(--scheduler-color-stone-300);
+  color: var(--scheduler-color-stone-600);
 }
 
 .btn-outline:hover {
-  background-color: var(--color-stone-50);
+  background-color: var(--scheduler-color-stone-50);
 }
 
 .btn-danger-outline {
   background: none;
-  border: 1px solid var(--color-red-300);
-  color: var(--color-red-600);
+  border: 1px solid var(--scheduler-color-red-300);
+  color: var(--scheduler-color-red-600);
 }
 
 .btn-danger-outline:hover {
-  background-color: var(--color-red-50);
+  background-color: var(--scheduler-color-red-50);
 }
 
 .btn-danger {
-  background-color: var(--color-red-500);
+  background-color: var(--scheduler-color-red-500);
   color: white;
 }
 
 .btn-danger:hover {
-  background-color: var(--color-red-600);
+  background-color: var(--scheduler-color-red-600);
 }
 
 .btn-ghost {
   background: none;
-  color: var(--color-rose-600);
+  color: var(--scheduler-color-rose-600);
   padding: 0.5rem 0.75rem;
 }
 
 .btn-ghost:hover {
-  background-color: var(--color-rose-50);
-  color: var(--color-rose-700);
+  background-color: var(--scheduler-color-rose-50);
+  color: var(--scheduler-color-rose-700);
 }
 
 .btn-full {
@@ -975,7 +978,7 @@
 .detail-client-name {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--color-stone-900);
+  color: var(--scheduler-color-stone-900);
   margin-bottom: 1rem;
 }
 
@@ -994,8 +997,8 @@
 .detail-icon {
   width: 2rem;
   height: 2rem;
-  border-radius: var(--border-radius-lg);
-  background-color: var(--color-stone-100);
+  border-radius: var(--scheduler-border-radius-lg);
+  background-color: var(--scheduler-color-stone-100);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1005,13 +1008,13 @@
 .detail-icon.lg {
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: var(--border-radius-xl);
+  border-radius: var(--scheduler-border-radius-xl);
 }
 
 .detail-icon svg {
   width: 1rem;
   height: 1rem;
-  color: var(--color-stone-500);
+  color: var(--scheduler-color-stone-500);
 }
 
 .detail-icon.lg svg {
@@ -1025,7 +1028,7 @@
 
 .detail-item-label {
   font-size: 0.875rem;
-  color: var(--color-stone-500);
+  color: var(--scheduler-color-stone-500);
 }
 
 .detail-item-label.xs {
@@ -1036,19 +1039,19 @@
 }
 
 .detail-item-value {
-  color: var(--color-stone-900);
+  color: var(--scheduler-color-stone-900);
   font-weight: 500;
   margin-top: 0.125rem;
 }
 
 .detail-item-secondary {
   font-size: 0.875rem;
-  color: var(--color-stone-500);
+  color: var(--scheduler-color-stone-500);
   margin-top: 0.125rem;
 }
 
 .detail-item-text {
-  color: var(--color-stone-700);
+  color: var(--scheduler-color-stone-700);
   margin-top: 0.125rem;
 }
 
@@ -1056,20 +1059,20 @@
    Delete Confirmation
    ============================================ */
 .delete-confirm {
-  background-color: var(--color-red-50);
-  border: 1px solid var(--color-red-200);
-  border-radius: var(--border-radius-xl);
+  background-color: var(--scheduler-color-red-50);
+  border: 1px solid var(--scheduler-color-red-200);
+  border-radius: var(--scheduler-border-radius-xl);
   padding: 1rem;
 }
 
 .delete-confirm.sm {
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--scheduler-border-radius-lg);
   padding: 0.75rem;
 }
 
 .delete-confirm-text {
   font-size: 0.875rem;
-  color: var(--color-red-800);
+  color: var(--scheduler-color-red-800);
   margin-bottom: 0.75rem;
 }
 
@@ -1085,7 +1088,7 @@
 .delete-confirm-actions .btn {
   flex: 1;
   padding: 0.5rem 0.75rem;
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--scheduler-border-radius-lg);
 }
 
 /* ============================================
@@ -1094,8 +1097,8 @@
 .datepicker-modal {
   position: relative;
   background-color: white;
-  border-radius: var(--border-radius-2xl);
-  box-shadow: var(--shadow-2xl);
+  border-radius: var(--scheduler-border-radius-2xl);
+  box-shadow: var(--scheduler-shadow-2xl);
   width: 100%;
   max-width: 24rem;
   margin: 0 1rem;
@@ -1105,19 +1108,19 @@
 
 .datepicker-header {
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--color-stone-100);
-  background: linear-gradient(to bottom, var(--color-stone-50), white);
+  border-bottom: 1px solid var(--scheduler-color-stone-100);
+  background: linear-gradient(to bottom, var(--scheduler-color-stone-50), white);
 }
 
 .datepicker-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-stone-800);
+  color: var(--scheduler-color-stone-800);
 }
 
 .datepicker-subtitle {
   font-size: 0.875rem;
-  color: var(--color-stone-500);
+  color: var(--scheduler-color-stone-500);
   margin-top: 0.125rem;
 }
 
@@ -1134,15 +1137,15 @@
 
 .datepicker-nav-btn {
   padding: 0.5rem;
-  border-radius: var(--border-radius-lg);
-  color: var(--color-stone-600);
-  transition: background-color var(--transition-fast);
+  border-radius: var(--scheduler-border-radius-lg);
+  color: var(--scheduler-color-stone-600);
+  transition: background-color var(--scheduler-transition-fast);
   background: none;
   border: none;
 }
 
 .datepicker-nav-btn:hover {
-  background-color: var(--color-stone-100);
+  background-color: var(--scheduler-color-stone-100);
 }
 
 .datepicker-nav-btn svg {
@@ -1153,7 +1156,7 @@
 .datepicker-month-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-stone-800);
+  color: var(--scheduler-color-stone-800);
 }
 
 .datepicker-weekdays {
@@ -1171,7 +1174,7 @@
   justify-content: center;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-stone-400);
+  color: var(--scheduler-color-stone-400);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -1187,49 +1190,49 @@
   height: 2.25rem;
   font-size: 0.875rem;
   font-weight: 500;
-  border-radius: var(--border-radius-lg);
-  transition: all var(--transition-fast);
+  border-radius: var(--scheduler-border-radius-lg);
+  transition: all var(--scheduler-transition-fast);
   background: none;
   border: none;
-  color: var(--color-stone-700);
+  color: var(--scheduler-color-stone-700);
   cursor: pointer;
 }
 
 .datepicker-day:hover {
-  background-color: var(--color-stone-100);
+  background-color: var(--scheduler-color-stone-100);
 }
 
 .datepicker-day.today {
-  background-color: var(--color-stone-100);
-  color: var(--color-stone-900);
+  background-color: var(--scheduler-color-stone-100);
+  color: var(--scheduler-color-stone-900);
   font-weight: 600;
 }
 
 .datepicker-day.today:hover {
-  background-color: var(--color-stone-200);
+  background-color: var(--scheduler-color-stone-200);
 }
 
 .datepicker-day.selected {
-  background-color: var(--color-rose-500);
+  background-color: var(--scheduler-color-rose-500);
   color: white;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--scheduler-shadow-md);
 }
 
 .datepicker-day.selected:hover {
-  background-color: var(--color-rose-600);
+  background-color: var(--scheduler-color-rose-600);
 }
 
 .datepicker-day.in-range {
-  background-color: var(--color-rose-100);
-  color: var(--color-rose-700);
+  background-color: var(--scheduler-color-rose-100);
+  color: var(--scheduler-color-rose-700);
 }
 
 .datepicker-day.in-range:hover {
-  background-color: var(--color-rose-200);
+  background-color: var(--scheduler-color-rose-200);
 }
 
 .datepicker-day.disabled {
-  color: var(--color-stone-300);
+  color: var(--scheduler-color-stone-300);
   cursor: not-allowed;
 }
 
@@ -1242,12 +1245,12 @@
   margin-top: 1rem;
   text-align: center;
   font-size: 0.875rem;
-  color: var(--color-stone-500);
+  color: var(--scheduler-color-stone-500);
 }
 
 .datepicker-footer {
   padding: 1rem 1.25rem;
-  border-top: 1px solid var(--color-stone-100);
+  border-top: 1px solid var(--scheduler-color-stone-100);
   background-color: rgba(250, 250, 249, 0.5);
   display: flex;
   align-items: center;
@@ -1284,126 +1287,6 @@
 }
 
 /* ============================================
-   App Demo Styles
-   ============================================ */
-.app-container {
-  min-height: 100vh;
-  background-color: var(--color-stone-100);
-}
-
-.app-header {
-  background-color: white;
-  border-bottom: 1px solid var(--color-stone-200);
-  padding: 1rem 1.5rem;
-}
-
-.app-header-content {
-  max-width: 80rem;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.app-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--color-stone-800);
-  letter-spacing: -0.025em;
-}
-
-.app-subtitle {
-  color: var(--color-stone-500);
-  font-size: 0.875rem;
-  margin-top: 0.125rem;
-}
-
-.app-header-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.app-header-label {
-  font-size: 0.875rem;
-  color: var(--color-stone-500);
-}
-
-.app-main {
-  padding: 1.5rem;
-}
-
-.app-main-content {
-  max-width: 80rem;
-  margin: 0 auto;
-}
-
-.scheduler-wrapper {
-  height: calc(100vh - 180px);
-  min-height: 600px;
-}
-
-.app-legend {
-  margin-top: 1.5rem;
-  background-color: white;
-  border-radius: var(--border-radius-xl);
-  border: 1px solid var(--color-stone-200);
-  padding: 1rem;
-}
-
-.legend-title {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-stone-700);
-  margin-bottom: 0.75rem;
-}
-
-.legend-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.legend-dot {
-  width: 0.75rem;
-  height: 0.75rem;
-  border-radius: 50%;
-}
-
-.legend-dot.classic {
-  background-color: var(--color-rose-400);
-}
-
-.legend-dot.hybrid {
-  background-color: var(--color-violet-400);
-}
-
-.legend-dot.volume {
-  background-color: var(--color-amber-400);
-}
-
-.legend-dot.refill {
-  background-color: var(--color-emerald-400);
-}
-
-.legend-text {
-  font-size: 0.875rem;
-  color: var(--color-stone-600);
-}
-
-.legend-tip {
-  font-size: 0.75rem;
-  color: var(--color-stone-400);
-  margin-top: 0.75rem;
-}
-
-/* ============================================
    Scrollbar Styles
    ============================================ */
 .scheduler-scroll {
@@ -1416,17 +1299,17 @@
 }
 
 .scheduler-scroll::-webkit-scrollbar-track {
-  background: var(--color-stone-100);
+  background: var(--scheduler-color-stone-100);
   border-radius: 4px;
 }
 
 .scheduler-scroll::-webkit-scrollbar-thumb {
-  background: var(--color-stone-300);
+  background: var(--scheduler-color-stone-300);
   border-radius: 4px;
 }
 
 .scheduler-scroll::-webkit-scrollbar-thumb:hover {
-  background: var(--color-stone-400);
+  background: var(--scheduler-color-stone-400);
 }
 
 /* ============================================
@@ -1434,7 +1317,7 @@
    ============================================ */
 .week-header-bar {
   display: flex;
-  border-bottom: 1px solid var(--color-stone-200);
+  border-bottom: 1px solid var(--scheduler-color-stone-200);
   background-color: white;
   position: sticky;
   top: 0;
@@ -1444,5 +1327,5 @@
 .week-header-spacer {
   width: 80px;
   flex-shrink: 0;
-  border-right: 1px solid var(--color-stone-200);
+  border-right: 1px solid var(--scheduler-color-stone-200);
 }

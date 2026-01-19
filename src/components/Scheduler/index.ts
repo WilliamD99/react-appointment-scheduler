@@ -4,6 +4,9 @@
  * Main export for the lash studio scheduler viewer.
  */
 
+// Import styles - this ensures CSS is bundled with the library
+import './styles.css';
+
 // Main component
 export { Scheduler } from './Scheduler';
 
