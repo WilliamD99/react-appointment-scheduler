@@ -1,6 +1,6 @@
 {
   "name": "react-appointment-scheduler",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A production-ready React scheduler component for appointment management with day/week views, drag-and-drop, and TypeScript support",
   "type": "module",
   "main": "./dist/scheduler.cjs",
