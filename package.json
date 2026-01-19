@@ -1,0 +1,72 @@
+{
+  "name": "react-appointment-scheduler",
+  "version": "1.0.0",
+  "description": "A production-ready React scheduler component for appointment management with day/week views, drag-and-drop, and TypeScript support",
+  "type": "module",
+  "main": "./dist/scheduler.cjs",
+  "module": "./dist/scheduler.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/scheduler.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/scheduler.cjs"
+      }
+    },
+    "./styles.css": "./dist/scheduler.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:lib": "vite build",
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build:lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/react-appointment-scheduler.git"
+  },
+  "keywords": [
+    "react",
+    "scheduler",
+    "calendar",
+    "appointments",
+    "booking",
+    "drag-and-drop",
+    "typescript",
+    "tailwind",
+    "week-view",
+    "day-view",
+    "time-grid"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/react": "^19.2.8",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tailwindcss": "^4.1.18",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.5.4"
+  }
+}
