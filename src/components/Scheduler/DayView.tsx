@@ -111,35 +111,20 @@ const TechnicianColumn = memo(function TechnicianColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`
-        flex-1 min-w-[180px] border-r border-stone-200 last:border-r-0
-        transition-colors duration-150
-        ${isOver ? 'bg-rose-50/30' : ''}
-      `}
+      className={`tech-column ${isOver ? 'drag-over' : ''}`}
     >
       {/* Technician header */}
-      <div
-        className={`
-          sticky top-0 z-10 px-3 py-3 text-center border-b border-stone-200
-          ${isOver ? 'bg-rose-50/50' : 'bg-white'}
-        `}
-      >
-        <span className="text-sm font-semibold text-stone-800">
-          {technician}
-        </span>
+      <div className={`column-header ${isOver ? 'drag-over' : ''}`}>
+        <span className="tech-header-text">{technician}</span>
       </div>
 
       {/* Time grid for this technician */}
-      <div className="relative" style={{ height: `${gridHeight}px` }}>
+      <div className="grid-slots" style={{ height: `${gridHeight}px` }}>
         {/* Slot backgrounds */}
         {slots.map((slot) => (
           <div
             key={`${technician}-${slot.hour}-${slot.minute}`}
-            className={`
-              border-b transition-colors duration-100
-              ${slot.isHourStart ? 'border-stone-300' : 'border-stone-200'}
-              hover:bg-stone-100/50 cursor-pointer
-            `}
+            className={`grid-slot ${slot.isHourStart ? 'hour-start' : ''}`}
             style={{ height: `${SLOT_HEIGHT}px` }}
             onClick={() => handleSlotClick(slot)}
             role="button"
@@ -148,7 +133,7 @@ const TechnicianColumn = memo(function TechnicianColumn({
         ))}
 
         {/* Appointments */}
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="appointments-layer">
           {layouts.map((layout) => (
             <AppointmentBlock
               key={layout.appointment.id}
@@ -186,33 +171,29 @@ export const DayView = memo(function DayView({
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="view-container">
       {/* Day header */}
-      <div className="flex-shrink-0 px-4 py-3 border-b border-stone-200 bg-white">
-        <div className="flex items-center gap-3 ml-20">
-          <h2 className="text-lg font-semibold text-stone-800">
-            {formattedDate}
-          </h2>
+      <div className="view-header">
+        <div className="view-header-content">
+          <h2 className="view-header-title">{formattedDate}</h2>
           {isTodayDate && (
-            <span className="px-2 py-0.5 text-xs font-medium bg-rose-100 text-rose-700 rounded-full">
-              Today
-            </span>
+            <span className="today-badge">Today</span>
           )}
         </div>
       </div>
 
       {/* Scrollable area with technician columns */}
-      <div className="flex-1 overflow-auto scheduler-scroll">
-        <div className="flex min-w-full">
+      <div className="view-scroll-area scheduler-scroll">
+        <div className="view-grid-container">
           {/* Sticky time column */}
-          <div className="sticky left-0 z-20 bg-stone-50">
+          <div className="time-column" style={{ position: 'sticky', left: 0, zIndex: 20 }}>
             {/* Spacer for technician header row */}
-            <div className="h-12 border-b border-stone-200" />
+            <div className="time-column-spacer" />
             <TimeColumn slots={slots} slotHeight={SLOT_HEIGHT} />
           </div>
 
           {/* Technician columns */}
-          <div className="flex flex-1">
+          <div className="columns-container">
             {technicians.map((technician) => (
               <TechnicianColumn
                 key={technician}

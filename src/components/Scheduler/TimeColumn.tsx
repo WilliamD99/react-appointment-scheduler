@@ -27,26 +27,21 @@ export const TimeColumn = memo(function TimeColumn({
   slotHeight,
 }: TimeColumnProps) {
   return (
-    <div
-      className="sticky left-0 z-20 bg-stone-50 border-r border-stone-200 flex-shrink-0"
-      style={{ width: '80px' }}
-    >
+    <div className="time-column" style={{ width: '80px' }}>
       {slots.map((slot, index) => (
         <div
           key={`${slot.hour}-${slot.minute}`}
-          className="relative flex items-start justify-end pr-3"
+          className="time-slot-label"
           style={{ height: `${slotHeight}px` }}
         >
           {/* Only show label at the start of each hour */}
           {slot.isHourStart && (
-            <span className="text-xs font-medium text-stone-500 -mt-2 select-none">
-              {slot.label}
-            </span>
+            <span>{slot.label}</span>
           )}
           
           {/* Hour divider line */}
           {slot.isHourStart && index > 0 && (
-            <div className="absolute top-0 right-0 w-3 border-t border-stone-300" />
+            <div className="time-slot-divider" />
           )}
         </div>
       ))}

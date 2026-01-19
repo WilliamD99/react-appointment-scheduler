@@ -48,6 +48,8 @@ interface WeekViewProps {
   selectedAppointmentId?: string | null;
   /** ID of appointment being dragged */
   draggingAppointmentId?: string | null;
+  /** Selected date range for highlighting (week view) */
+  selectedDateRange?: { start: Date; end: Date } | null;
 }
 
 /**
@@ -63,6 +65,8 @@ interface DayColumnProps {
   onSlotClick?: (startTime: Date, endTime: Date) => void;
   selectedAppointmentId?: string | null;
   draggingAppointmentId?: string | null;
+  /** Whether this day is within the selected date range */
+  isInSelectedRange?: boolean;
 }
 
 const DayColumn = memo(function DayColumn({
@@ -75,6 +79,7 @@ const DayColumn = memo(function DayColumn({
   onSlotClick,
   selectedAppointmentId,
   draggingAppointmentId,
+  isInSelectedRange,
 }: DayColumnProps) {
   const isTodayDate = isToday(date);
   
@@ -110,43 +115,24 @@ const DayColumn = memo(function DayColumn({
   return (
     <div 
       ref={setNodeRef}
-      className={`
-        flex-1 min-w-[120px] border-r border-stone-200 last:border-r-0
-        transition-colors duration-150
-        ${isOver ? 'bg-rose-50/30' : ''}
-      `}
+      className={`day-column ${isOver ? 'drag-over' : ''} ${isInSelectedRange ? 'in-selected-range' : ''}`}
     >
       {/* Day header */}
-      <div
-        className={`
-          sticky top-0 z-10 px-2 py-2 text-center border-b border-stone-200
-          ${isTodayDate ? 'bg-rose-50' : isOver ? 'bg-rose-50/50' : 'bg-white'}
-        `}
-      >
-        <span
-          className={`
-            text-sm font-medium
-            ${isTodayDate ? 'text-rose-700' : 'text-stone-700'}
-          `}
-        >
+      <div className={`column-header ${isTodayDate ? 'today' : ''} ${isOver ? 'drag-over' : ''} ${isInSelectedRange ? 'in-selected-range' : ''}`}>
+        <span className={`column-header-text ${isTodayDate ? 'today' : ''} ${isInSelectedRange ? 'in-selected-range' : ''}`}>
           {formatShortDate(date)}
         </span>
-        {isTodayDate && (
-          <div className="w-1.5 h-1.5 bg-rose-400 rounded-full mx-auto mt-1" />
-        )}
+        {isTodayDate && <div className="today-dot" />}
+        {isInSelectedRange && !isTodayDate && <div className="selected-range-dot" />}
       </div>
 
       {/* Day grid */}
-      <div className="relative" style={{ height: `${gridHeight}px` }}>
+      <div className="grid-slots" style={{ height: `${gridHeight}px` }}>
         {/* Slot backgrounds */}
         {slots.map((slot) => (
           <div
             key={`${date.toISOString()}-${slot.hour}-${slot.minute}`}
-            className={`
-              border-b transition-colors duration-100
-              ${slot.isHourStart ? 'border-stone-300' : 'border-stone-200'}
-              hover:bg-stone-100/50 cursor-pointer
-            `}
+            className={`grid-slot ${slot.isHourStart ? 'hour-start' : ''}`}
             style={{ height: `${SLOT_HEIGHT}px` }}
             onClick={() => handleSlotClick(slot)}
             role="button"
@@ -155,7 +141,7 @@ const DayColumn = memo(function DayColumn({
         ))}
 
         {/* Appointments */}
-        <div className="absolute inset-0 pointer-events-none">
+        <div className="appointments-layer">
           {layouts.map((layout) => (
             <AppointmentBlock
               key={layout.appointment.id}
@@ -180,6 +166,7 @@ export const WeekView = memo(function WeekView({
   onSlotClick,
   selectedAppointmentId,
   draggingAppointmentId,
+  selectedDateRange,
 }: WeekViewProps) {
   // Get all dates for the week
   const weekDates = useMemo(() => getWeekDates(selectedDate), [selectedDate]);
@@ -190,29 +177,43 @@ export const WeekView = memo(function WeekView({
     [selectedDate, startHour, endHour]
   );
 
+  // Helper to check if a date is within the selected range
+  const isDateInSelectedRange = useCallback((date: Date): boolean => {
+    if (!selectedDateRange) return false;
+    const { start, end } = selectedDateRange;
+    // Normalize to start of day for comparison
+    const dateStart = new Date(date);
+    dateStart.setHours(0, 0, 0, 0);
+    const rangeStart = new Date(start);
+    rangeStart.setHours(0, 0, 0, 0);
+    const rangeEnd = new Date(end);
+    rangeEnd.setHours(0, 0, 0, 0);
+    return dateStart >= rangeStart && dateStart <= rangeEnd;
+  }, [selectedDateRange]);
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="view-container">
       {/* Header spacer + day headers row */}
-      <div className="flex border-b border-stone-200 bg-white sticky top-0 z-20">
+      <div className="week-header-bar">
         {/* Time column header spacer */}
-        <div className="w-20 flex-shrink-0 border-r border-stone-200" />
+        <div className="week-header-spacer" />
         
         {/* Day headers are now inside the columns */}
-        <div className="flex-1" />
+        <div style={{ flex: 1 }} />
       </div>
 
       {/* Scrollable area */}
-      <div className="flex-1 overflow-auto scheduler-scroll">
-        <div className="flex min-w-full">
+      <div className="view-scroll-area scheduler-scroll">
+        <div className="view-grid-container">
           {/* Sticky time column */}
-          <div className="sticky left-0 z-20 bg-stone-50">
+          <div className="time-column" style={{ position: 'sticky', left: 0, zIndex: 20 }}>
             {/* Spacer for day header row */}
-            <div className="h-12 border-b border-stone-200" />
+            <div className="time-column-spacer" />
             <TimeColumn slots={slots} slotHeight={SLOT_HEIGHT} />
           </div>
 
           {/* Day columns */}
-          <div className="flex flex-1">
+          <div className="columns-container">
             {weekDates.map((date) => (
               <DayColumn
                 key={date.toISOString()}
@@ -225,6 +226,7 @@ export const WeekView = memo(function WeekView({
                 onSlotClick={onSlotClick}
                 selectedAppointmentId={selectedAppointmentId}
                 draggingAppointmentId={draggingAppointmentId}
+                isInSelectedRange={isDateInSelectedRange(date)}
               />
             ))}
           </div>

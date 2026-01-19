@@ -1,0 +1,1448 @@
+/**
+ * Scheduler Component Styles
+ * 
+ * A comprehensive CSS file replacing Tailwind utility classes.
+ * Uses CSS custom properties for theming.
+ */
+
+/* ============================================
+   CSS Custom Properties (Design Tokens)
+   ============================================ */
+:root {
+  /* Colors - Stone palette */
+  --color-stone-50: #fafaf9;
+  --color-stone-100: #f5f5f4;
+  --color-stone-200: #e7e5e4;
+  --color-stone-300: #d6d3d1;
+  --color-stone-400: #a8a29e;
+  --color-stone-500: #78716c;
+  --color-stone-600: #57534e;
+  --color-stone-700: #44403c;
+  --color-stone-800: #292524;
+  --color-stone-900: #1c1917;
+
+  /* Colors - Rose palette */
+  --color-rose-50: #fff1f2;
+  --color-rose-100: #ffe4e6;
+  --color-rose-200: #fecdd3;
+  --color-rose-300: #fda4af;
+  --color-rose-400: #fb7185;
+  --color-rose-500: #f43f5e;
+  --color-rose-600: #e11d48;
+  --color-rose-700: #be123c;
+  --color-rose-900: #881337;
+
+  /* Colors - Violet palette */
+  --color-violet-50: #f5f3ff;
+  --color-violet-100: #ede9fe;
+  --color-violet-300: #c4b5fd;
+  --color-violet-400: #a78bfa;
+  --color-violet-900: #4c1d95;
+
+  /* Colors - Amber palette */
+  --color-amber-50: #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-300: #fcd34d;
+  --color-amber-400: #fbbf24;
+  --color-amber-900: #78350f;
+
+  /* Colors - Emerald palette */
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
+  --color-emerald-900: #064e3b;
+
+  /* Colors - Red palette */
+  --color-red-50: #fef2f2;
+  --color-red-200: #fecaca;
+  --color-red-300: #fca5a5;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-red-800: #991b1b;
+
+  /* Scheduler-specific variables */
+  --slot-height: 60px;
+  --time-column-width: 80px;
+  --border-radius-sm: 0.375rem;
+  --border-radius-md: 0.5rem;
+  --border-radius-lg: 0.75rem;
+  --border-radius-xl: 1rem;
+  --border-radius-2xl: 1.5rem;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 200ms ease-out;
+  --transition-slow: 300ms ease-out;
+}
+
+/* ============================================
+   Base Styles & Resets
+   ============================================ */
+.scheduler-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: white;
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-stone-200);
+  overflow: hidden;
+}
+
+/* ============================================
+   Header Styles
+   ============================================ */
+.scheduler-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-stone-200);
+  background-color: rgba(250, 250, 249, 0.5);
+}
+
+.scheduler-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scheduler-nav-btn {
+  padding: 0.5rem;
+  border-radius: var(--border-radius-lg);
+  color: var(--color-stone-600);
+  transition: background-color var(--transition-fast);
+  background: none;
+  border: none;
+}
+
+.scheduler-nav-btn:hover {
+  background-color: var(--color-stone-100);
+}
+
+.scheduler-nav-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.scheduler-nav-label {
+  min-width: 140px;
+  padding: 0.375rem 0.75rem;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-stone-700);
+  border-radius: var(--border-radius-lg);
+  transition: background-color var(--transition-fast);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.scheduler-nav-label:hover {
+  background-color: var(--color-stone-100);
+}
+
+.scheduler-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.scheduler-create-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 1rem;
+  background-color: var(--color-rose-500);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--border-radius-lg);
+  border: none;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.scheduler-create-btn:hover {
+  background-color: var(--color-rose-600);
+  box-shadow: var(--shadow);
+}
+
+.scheduler-create-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ============================================
+   View Toggle Styles
+   ============================================ */
+.view-toggle {
+  display: inline-flex;
+  background-color: var(--color-stone-100);
+  border-radius: var(--border-radius-lg);
+  padding: 0.25rem;
+}
+
+.view-toggle-btn {
+  padding: 0.375rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-normal);
+  background: none;
+  border: none;
+  color: var(--color-stone-500);
+}
+
+.view-toggle-btn:hover {
+  color: var(--color-stone-700);
+}
+
+.view-toggle-btn.active {
+  background-color: white;
+  color: var(--color-stone-900);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================
+   Content Area
+   ============================================ */
+.scheduler-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ============================================
+   Day/Week View Shared Styles
+   ============================================ */
+.view-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.view-header {
+  flex-shrink: 0;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-stone-200);
+  background-color: white;
+}
+
+.view-header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: 80px;
+}
+
+.view-header-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-stone-800);
+}
+
+.today-badge {
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: var(--color-rose-100);
+  color: var(--color-rose-700);
+  border-radius: 9999px;
+}
+
+.view-scroll-area {
+  flex: 1;
+  overflow: auto;
+}
+
+.view-grid-container {
+  display: flex;
+  min-width: 100%;
+}
+
+/* ============================================
+   Time Column Styles
+   ============================================ */
+.time-column {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background-color: var(--color-stone-50);
+  border-right: 1px solid var(--color-stone-200);
+  flex-shrink: 0;
+  width: 80px;
+}
+
+.time-column-spacer {
+  height: 48px;
+  border-bottom: 1px solid var(--color-stone-200);
+}
+
+.time-slot-label {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-right: 0.75rem;
+}
+
+.time-slot-label span {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-stone-500);
+  margin-top: -0.5rem;
+  user-select: none;
+}
+
+.time-slot-divider {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.75rem;
+  border-top: 1px solid var(--color-stone-300);
+}
+
+/* ============================================
+   Day/Technician Column Styles
+   ============================================ */
+.columns-container {
+  display: flex;
+  flex: 1;
+}
+
+.day-column,
+.tech-column {
+  flex: 1;
+  min-width: 120px;
+  border-right: 1px solid var(--color-stone-200);
+  transition: background-color var(--transition-fast);
+}
+
+.day-column:last-child,
+.tech-column:last-child {
+  border-right: none;
+}
+
+.tech-column {
+  min-width: 180px;
+}
+
+.day-column.drag-over,
+.tech-column.drag-over {
+  background-color: rgba(255, 241, 242, 0.3);
+}
+
+.column-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid var(--color-stone-200);
+  background-color: white;
+}
+
+.column-header.today {
+  background-color: var(--color-rose-50);
+}
+
+.column-header.drag-over {
+  background-color: rgba(255, 241, 242, 0.5);
+}
+
+.column-header-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-stone-700);
+}
+
+.column-header-text.today {
+  color: var(--color-rose-700);
+}
+
+.tech-header-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-stone-800);
+}
+
+.today-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  background-color: var(--color-rose-400);
+  border-radius: 50%;
+  margin: 0.25rem auto 0;
+}
+
+/* Selected date range highlighting */
+.day-column.in-selected-range {
+  background-color: rgba(251, 113, 133, 0.08);
+}
+
+.column-header.in-selected-range {
+  background-color: var(--color-rose-100);
+  border-bottom-color: var(--color-rose-200);
+}
+
+.column-header-text.in-selected-range {
+  color: var(--color-rose-700);
+  font-weight: 600;
+}
+
+.selected-range-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  background-color: var(--color-rose-300);
+  border-radius: 50%;
+  margin: 0.25rem auto 0;
+}
+
+/* ============================================
+   Grid Slots
+   ============================================ */
+.grid-slots {
+  position: relative;
+}
+
+.grid-slot {
+  border-bottom: 1px solid var(--color-stone-200);
+  transition: background-color 100ms;
+  cursor: pointer;
+}
+
+.grid-slot.hour-start {
+  border-bottom-color: var(--color-stone-300);
+}
+
+.grid-slot:hover {
+  background-color: rgba(245, 245, 244, 0.5);
+}
+
+.appointments-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ============================================
+   Appointment Block Styles
+   ============================================ */
+.appointment-block {
+  position: absolute;
+  border-left-width: 4px;
+  border-left-style: solid;
+  border-radius: 0 var(--border-radius-lg) var(--border-radius-lg) 0;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.appointment-block:hover {
+  z-index: 20;
+}
+
+.appointment-block.dragging {
+  opacity: 0.7;
+  box-shadow: var(--shadow-lg);
+  transform: scale(1.02);
+  cursor: grabbing;
+}
+
+.appointment-block.selected {
+  box-shadow: 0 0 0 2px var(--color-stone-400), 0 0 0 4px rgba(168, 162, 158, 0.2);
+}
+
+.appointment-content {
+  padding: 0.5rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.appointment-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.125rem;
+}
+
+.appointment-badge-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.appointment-badge-text {
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appointment-client {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appointment-details {
+  margin-top: auto;
+}
+
+.appointment-time {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.appointment-artist {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  margin-top: 0.125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Service type colors */
+.service-classic {
+  background-color: var(--color-rose-50);
+  border-left-color: var(--color-rose-300);
+  color: var(--color-rose-900);
+}
+
+.service-classic:hover {
+  background-color: var(--color-rose-100);
+}
+
+.service-classic .appointment-badge-dot {
+  background-color: var(--color-rose-400);
+}
+
+.service-hybrid {
+  background-color: var(--color-violet-50);
+  border-left-color: var(--color-violet-300);
+  color: var(--color-violet-900);
+}
+
+.service-hybrid:hover {
+  background-color: var(--color-violet-100);
+}
+
+.service-hybrid .appointment-badge-dot {
+  background-color: var(--color-violet-400);
+}
+
+.service-volume {
+  background-color: var(--color-amber-50);
+  border-left-color: var(--color-amber-300);
+  color: var(--color-amber-900);
+}
+
+.service-volume:hover {
+  background-color: var(--color-amber-100);
+}
+
+.service-volume .appointment-badge-dot {
+  background-color: var(--color-amber-400);
+}
+
+.service-refill {
+  background-color: var(--color-emerald-50);
+  border-left-color: var(--color-emerald-300);
+  color: var(--color-emerald-900);
+}
+
+.service-refill:hover {
+  background-color: var(--color-emerald-100);
+}
+
+.service-refill .appointment-badge-dot {
+  background-color: var(--color-emerald-400);
+}
+
+/* ============================================
+   Drag Overlay
+   ============================================ */
+.drag-overlay {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-xl);
+  border-left: 4px solid;
+  opacity: 0.9;
+}
+
+.drag-overlay-client {
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drag-overlay-service {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+/* ============================================
+   Modal Styles
+   ============================================ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(28, 25, 23, 0.4);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 200ms ease-out;
+}
+
+.modal-content {
+  position: relative;
+  background-color: white;
+  border-radius: var(--border-radius-2xl);
+  box-shadow: var(--shadow-2xl);
+  max-width: 28rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  animation: zoomIn 200ms ease-out;
+  outline: none;
+}
+
+.modal-content.large {
+  max-width: 32rem;
+}
+
+.modal-header-strip {
+  height: 0.5rem;
+  border-radius: var(--border-radius-2xl) var(--border-radius-2xl) 0 0;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  color: var(--color-stone-400);
+  background: none;
+  border: none;
+  transition: all var(--transition-fast);
+  z-index: 10;
+}
+
+.modal-close-btn:hover {
+  color: var(--color-stone-600);
+  background-color: var(--color-stone-100);
+}
+
+.modal-close-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-stone-900);
+  margin-bottom: 1.25rem;
+}
+
+.modal-colored-header {
+  padding: 1rem 1.5rem;
+  border-radius: var(--border-radius-2xl) var(--border-radius-2xl) 0 0;
+  border-bottom: 1px solid;
+}
+
+.modal-colored-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.modal-colored-header p {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  opacity: 0.75;
+}
+
+/* ============================================
+   Side Panel Styles
+   ============================================ */
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 24rem;
+  max-width: 100%;
+  z-index: 40;
+  transform: translateX(100%);
+  transition: transform var(--transition-slow);
+}
+
+.side-panel.open {
+  transform: translateX(0);
+}
+
+.side-panel-content {
+  height: 100%;
+  background-color: white;
+  box-shadow: var(--shadow-2xl);
+  border-left: 1px solid var(--color-stone-200);
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+
+.panel-header-strip {
+  height: 0.375rem;
+  flex-shrink: 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-stone-200);
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-stone-900);
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+/* ============================================
+   Form Styles
+   ============================================ */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-stone-700);
+  margin-bottom: 0.375rem;
+}
+
+.form-label .required {
+  color: var(--color-rose-500);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--color-stone-300);
+  border-radius: var(--border-radius-xl);
+  font-size: 0.875rem;
+  transition: all var(--transition-fast);
+  background-color: white;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-rose-300);
+  box-shadow: 0 0 0 3px var(--color-rose-200);
+}
+
+.form-input.sm,
+.form-select.sm,
+.form-textarea.sm {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius-lg);
+}
+
+.form-textarea {
+  resize: none;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+/* Service type selector */
+.service-selector {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.service-option {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-stone-200);
+  border-radius: var(--border-radius-xl);
+  text-align: left;
+  transition: all var(--transition-fast);
+  background: none;
+  cursor: pointer;
+}
+
+.service-option:hover {
+  border-color: var(--color-stone-300);
+}
+
+.service-option.selected {
+  border-width: 2px;
+}
+
+.service-option-label {
+  display: block;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.service-option-duration {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-stone-400);
+  margin-top: 0.125rem;
+}
+
+.service-option.selected .service-option-duration {
+  opacity: 0.75;
+}
+
+/* ============================================
+   Button Styles
+   ============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--border-radius-xl);
+  border: none;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.btn-primary {
+  background-color: var(--color-rose-500);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-rose-600);
+  box-shadow: var(--shadow);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: var(--color-stone-100);
+  color: var(--color-stone-700);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-stone-200);
+}
+
+.btn-outline {
+  background: none;
+  border: 1px solid var(--color-stone-300);
+  color: var(--color-stone-600);
+}
+
+.btn-outline:hover {
+  background-color: var(--color-stone-50);
+}
+
+.btn-danger-outline {
+  background: none;
+  border: 1px solid var(--color-red-300);
+  color: var(--color-red-600);
+}
+
+.btn-danger-outline:hover {
+  background-color: var(--color-red-50);
+}
+
+.btn-danger {
+  background-color: var(--color-red-500);
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: var(--color-red-600);
+}
+
+.btn-ghost {
+  background: none;
+  color: var(--color-rose-600);
+  padding: 0.5rem 0.75rem;
+}
+
+.btn-ghost:hover {
+  background-color: var(--color-rose-50);
+  color: var(--color-rose-700);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn-group {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.btn-group > .btn {
+  flex: 1;
+}
+
+/* ============================================
+   Detail View Styles
+   ============================================ */
+.service-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  margin-bottom: 1rem;
+}
+
+.service-badge-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.service-badge-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.detail-client-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-stone-900);
+  margin-bottom: 1rem;
+}
+
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.detail-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--border-radius-lg);
+  background-color: var(--color-stone-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.detail-icon.lg {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--border-radius-xl);
+}
+
+.detail-icon svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-stone-500);
+}
+
+.detail-icon.lg svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.detail-item-content {
+  padding-top: 0.25rem;
+}
+
+.detail-item-label {
+  font-size: 0.875rem;
+  color: var(--color-stone-500);
+}
+
+.detail-item-label.xs {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.detail-item-value {
+  color: var(--color-stone-900);
+  font-weight: 500;
+  margin-top: 0.125rem;
+}
+
+.detail-item-secondary {
+  font-size: 0.875rem;
+  color: var(--color-stone-500);
+  margin-top: 0.125rem;
+}
+
+.detail-item-text {
+  color: var(--color-stone-700);
+  margin-top: 0.125rem;
+}
+
+/* ============================================
+   Delete Confirmation
+   ============================================ */
+.delete-confirm {
+  background-color: var(--color-red-50);
+  border: 1px solid var(--color-red-200);
+  border-radius: var(--border-radius-xl);
+  padding: 1rem;
+}
+
+.delete-confirm.sm {
+  border-radius: var(--border-radius-lg);
+  padding: 0.75rem;
+}
+
+.delete-confirm-text {
+  font-size: 0.875rem;
+  color: var(--color-red-800);
+  margin-bottom: 0.75rem;
+}
+
+.delete-confirm.sm .delete-confirm-text {
+  margin-bottom: 0.5rem;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.delete-confirm-actions .btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--border-radius-lg);
+}
+
+/* ============================================
+   Date Picker Modal Styles
+   ============================================ */
+.datepicker-modal {
+  position: relative;
+  background-color: white;
+  border-radius: var(--border-radius-2xl);
+  box-shadow: var(--shadow-2xl);
+  width: 100%;
+  max-width: 24rem;
+  margin: 0 1rem;
+  overflow: hidden;
+  animation: zoomIn 200ms ease-out;
+}
+
+.datepicker-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--color-stone-100);
+  background: linear-gradient(to bottom, var(--color-stone-50), white);
+}
+
+.datepicker-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-stone-800);
+}
+
+.datepicker-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-stone-500);
+  margin-top: 0.125rem;
+}
+
+.datepicker-calendar {
+  padding: 1rem;
+}
+
+.datepicker-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.datepicker-nav-btn {
+  padding: 0.5rem;
+  border-radius: var(--border-radius-lg);
+  color: var(--color-stone-600);
+  transition: background-color var(--transition-fast);
+  background: none;
+  border: none;
+}
+
+.datepicker-nav-btn:hover {
+  background-color: var(--color-stone-100);
+}
+
+.datepicker-nav-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.datepicker-month-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-stone-800);
+}
+
+.datepicker-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.datepicker-weekday {
+  width: 2.25rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-stone-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.datepicker-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.datepicker-day {
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--border-radius-lg);
+  transition: all var(--transition-fast);
+  background: none;
+  border: none;
+  color: var(--color-stone-700);
+  cursor: pointer;
+}
+
+.datepicker-day:hover {
+  background-color: var(--color-stone-100);
+}
+
+.datepicker-day.today {
+  background-color: var(--color-stone-100);
+  color: var(--color-stone-900);
+  font-weight: 600;
+}
+
+.datepicker-day.today:hover {
+  background-color: var(--color-stone-200);
+}
+
+.datepicker-day.selected {
+  background-color: var(--color-rose-500);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.datepicker-day.selected:hover {
+  background-color: var(--color-rose-600);
+}
+
+.datepicker-day.in-range {
+  background-color: var(--color-rose-100);
+  color: var(--color-rose-700);
+}
+
+.datepicker-day.in-range:hover {
+  background-color: var(--color-rose-200);
+}
+
+.datepicker-day.disabled {
+  color: var(--color-stone-300);
+  cursor: not-allowed;
+}
+
+.datepicker-day-empty {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.datepicker-range-info {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--color-stone-500);
+}
+
+.datepicker-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--color-stone-100);
+  background-color: rgba(250, 250, 249, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.datepicker-footer-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   App Demo Styles
+   ============================================ */
+.app-container {
+  min-height: 100vh;
+  background-color: var(--color-stone-100);
+}
+
+.app-header {
+  background-color: white;
+  border-bottom: 1px solid var(--color-stone-200);
+  padding: 1rem 1.5rem;
+}
+
+.app-header-content {
+  max-width: 80rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-stone-800);
+  letter-spacing: -0.025em;
+}
+
+.app-subtitle {
+  color: var(--color-stone-500);
+  font-size: 0.875rem;
+  margin-top: 0.125rem;
+}
+
+.app-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.app-header-label {
+  font-size: 0.875rem;
+  color: var(--color-stone-500);
+}
+
+.app-main {
+  padding: 1.5rem;
+}
+
+.app-main-content {
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+.scheduler-wrapper {
+  height: calc(100vh - 180px);
+  min-height: 600px;
+}
+
+.app-legend {
+  margin-top: 1.5rem;
+  background-color: white;
+  border-radius: var(--border-radius-xl);
+  border: 1px solid var(--color-stone-200);
+  padding: 1rem;
+}
+
+.legend-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-stone-700);
+  margin-bottom: 0.75rem;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+}
+
+.legend-dot.classic {
+  background-color: var(--color-rose-400);
+}
+
+.legend-dot.hybrid {
+  background-color: var(--color-violet-400);
+}
+
+.legend-dot.volume {
+  background-color: var(--color-amber-400);
+}
+
+.legend-dot.refill {
+  background-color: var(--color-emerald-400);
+}
+
+.legend-text {
+  font-size: 0.875rem;
+  color: var(--color-stone-600);
+}
+
+.legend-tip {
+  font-size: 0.75rem;
+  color: var(--color-stone-400);
+  margin-top: 0.75rem;
+}
+
+/* ============================================
+   Scrollbar Styles
+   ============================================ */
+.scheduler-scroll {
+  scroll-behavior: smooth;
+}
+
+.scheduler-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scheduler-scroll::-webkit-scrollbar-track {
+  background: var(--color-stone-100);
+  border-radius: 4px;
+}
+
+.scheduler-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-stone-300);
+  border-radius: 4px;
+}
+
+.scheduler-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-stone-400);
+}
+
+/* ============================================
+   Week View Header
+   ============================================ */
+.week-header-bar {
+  display: flex;
+  border-bottom: 1px solid var(--color-stone-200);
+  background-color: white;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.week-header-spacer {
+  width: 80px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--color-stone-200);
+}

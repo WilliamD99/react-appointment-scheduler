@@ -20,18 +20,11 @@ export const ViewToggle = memo(function ViewToggle({
   onViewChange,
 }: ViewToggleProps) {
   return (
-    <div className="inline-flex rounded-lg bg-stone-100 p-1">
+    <div className="view-toggle">
       <button
         type="button"
         onClick={() => onViewChange('day')}
-        className={`
-          px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200
-          ${
-            view === 'day'
-              ? 'bg-white text-stone-900 shadow-sm'
-              : 'text-stone-500 hover:text-stone-700'
-          }
-        `}
+        className={`view-toggle-btn ${view === 'day' ? 'active' : ''}`}
         aria-pressed={view === 'day'}
       >
         Day
@@ -39,14 +32,7 @@ export const ViewToggle = memo(function ViewToggle({
       <button
         type="button"
         onClick={() => onViewChange('week')}
-        className={`
-          px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200
-          ${
-            view === 'week'
-              ? 'bg-white text-stone-900 shadow-sm'
-              : 'text-stone-500 hover:text-stone-700'
-          }
-        `}
+        className={`view-toggle-btn ${view === 'week' ? 'active' : ''}`}
         aria-pressed={view === 'week'}
       >
         Week

@@ -1,0 +1,28 @@
+# Source files (dist is published via "files" in package.json)
+src/
+public/
+
+# Config files
+*.config.ts
+*.config.js
+tsconfig.json
+.gitignore
+
+# Development files
+index.html
+.vscode/
+.idea/
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
+coverage/
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log
+.env*

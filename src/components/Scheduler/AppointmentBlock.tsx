@@ -90,52 +90,48 @@ export const AppointmentBlock = memo(function AppointmentBlock({
   const isCompact = height < 50;
   const isVeryCompact = height < 35;
 
+  const classNames = [
+    'appointment-block',
+    colors.className,
+    isCurrentlyDragging ? 'dragging' : '',
+    isSelected ? 'selected' : '',
+  ].filter(Boolean).join(' ');
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`
-        ${colors.bg} ${colors.border} ${colors.text}
-        border-l-4 rounded-r-lg shadow-sm
-        transition-all duration-150 ease-out
-        overflow-hidden
-        ${isCurrentlyDragging ? 'opacity-70 shadow-lg scale-[1.02] cursor-grabbing' : 'cursor-pointer'}
-        ${isSelected ? 'ring-2 ring-stone-400 ring-offset-1' : ''}
-        ${!isCurrentlyDragging ? colors.hoverBg : ''}
-      `}
+      className={classNames}
       onClick={handleClick}
       {...attributes}
       {...listeners}
       role="button"
       aria-label={`${appointment.clientName}, ${getServiceDisplayName(appointment.serviceType)} at ${formatTime(appointment.startTime)}`}
     >
-      <div className="p-2 h-full flex flex-col">
+      <div className="appointment-content">
         {/* Service type badge */}
-        <div className="flex items-center gap-1.5 mb-0.5">
-          <span
-            className={`w-2 h-2 rounded-full ${colors.badge} flex-shrink-0`}
-            aria-hidden="true"
-          />
+        <div className="appointment-badge">
+          <span className="appointment-badge-dot" aria-hidden="true" />
           {!isVeryCompact && (
-            <span className="text-[10px] font-medium uppercase tracking-wide opacity-75 truncate">
+            <span className="appointment-badge-text">
               {appointment.serviceType}
             </span>
           )}
         </div>
 
         {/* Client name */}
-        <p className="font-semibold text-sm leading-tight truncate">
+        <p className="appointment-client">
           {appointment.clientName}
         </p>
 
         {/* Time range and artist - only show if enough space */}
         {!isCompact && (
-          <div className="mt-auto">
-            <p className="text-xs opacity-75">
+          <div className="appointment-details">
+            <p className="appointment-time">
               {formatTime(appointment.startTime)} – {formatTime(endTime)}
             </p>
             {appointment.artist && (
-              <p className="text-xs opacity-60 truncate mt-0.5">
+              <p className="appointment-artist">
                 {appointment.artist}
               </p>
             )}

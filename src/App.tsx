@@ -273,28 +273,25 @@ export default function App() {
     );
 
     return (
-        <div className="min-h-screen bg-stone-100">
+        <div className="app-container">
             {/* Header */}
-            <header className="bg-white border-b border-stone-200 px-6 py-4">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <header className="app-header">
+                <div className="app-header-content">
                     <div>
-                        <h1 className="text-2xl font-bold text-stone-800 tracking-tight">
-                            Luxe Lash Studio
-                        </h1>
-                        <p className="text-stone-500 text-sm mt-0.5">
-                            Appointment Scheduler
-                        </p>
+                        <h1 className="app-title">Luxe Lash Studio</h1>
+                        <p className="app-subtitle">Appointment Scheduler</p>
                     </div>
 
                     {/* Detail display toggle */}
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm text-stone-500">Detail view:</span>
+                    <div className="app-header-controls">
+                        <span className="app-header-label">Detail view:</span>
                         <select
                             value={detailDisplay}
                             onChange={(e) =>
                                 setDetailDisplay(e.target.value as DetailDisplayMode)
                             }
-                            className="px-3 py-1.5 text-sm border border-stone-300 rounded-lg bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300"
+                            className="form-select"
+                            style={{ width: 'auto', padding: '0.375rem 0.75rem' }}
                         >
                             <option value="modal">Modal</option>
                             <option value="panel">Side Panel</option>
@@ -304,10 +301,10 @@ export default function App() {
             </header>
 
             {/* Main content */}
-            <main className="p-6">
-                <div className="max-w-7xl mx-auto">
+            <main className="app-main">
+                <div className="app-main-content">
                     {/* Scheduler container */}
-                    <div className="h-[calc(100vh-180px)] min-h-[600px]">
+                    <div className="scheduler-wrapper">
                         <Scheduler
                             appointments={appointments}
                             startHour={8}
@@ -323,37 +320,27 @@ export default function App() {
                     </div>
 
                     {/* Legend */}
-                    <div className="mt-6 bg-white rounded-xl border border-stone-200 p-4">
-                        <h2 className="text-sm font-medium text-stone-700 mb-3">
-                            Service Types
-                        </h2>
-                        <div className="flex flex-wrap gap-4">
-                            <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-rose-400" />
-                                <span className="text-sm text-stone-600">
-                                    Classic (90 min)
-                                </span>
+                    <div className="app-legend">
+                        <h2 className="legend-title">Service Types</h2>
+                        <div className="legend-items">
+                            <div className="legend-item">
+                                <span className="legend-dot classic" />
+                                <span className="legend-text">Classic (90 min)</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-violet-400" />
-                                <span className="text-sm text-stone-600">
-                                    Hybrid (120 min)
-                                </span>
+                            <div className="legend-item">
+                                <span className="legend-dot hybrid" />
+                                <span className="legend-text">Hybrid (120 min)</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-amber-400" />
-                                <span className="text-sm text-stone-600">
-                                    Volume (150 min)
-                                </span>
+                            <div className="legend-item">
+                                <span className="legend-dot volume" />
+                                <span className="legend-text">Volume (150 min)</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="w-3 h-3 rounded-full bg-emerald-400" />
-                                <span className="text-sm text-stone-600">
-                                    Refill (60 min)
-                                </span>
+                            <div className="legend-item">
+                                <span className="legend-dot refill" />
+                                <span className="legend-text">Refill (60 min)</span>
                             </div>
                         </div>
-                        <p className="text-xs text-stone-400 mt-3">
+                        <p className="legend-tip">
                             Tip: Click an appointment to view details. Drag appointments to reschedule. Click an empty slot to create a new appointment.
                         </p>
                     </div>

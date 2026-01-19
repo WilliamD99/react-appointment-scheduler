@@ -31,8 +31,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/react-appointment-scheduler.git"
+    "url": "git+https://github.com/WilliamD99/react-appointment-scheduler.git"
   },
+  "bugs": {
+    "url": "https://github.com/WilliamD99/react-appointment-scheduler/issues"
+  },
+  "homepage": "https://github.com/WilliamD99/react-appointment-scheduler#readme",
   "keywords": [
     "react",
     "scheduler",
@@ -41,12 +45,11 @@
     "booking",
     "drag-and-drop",
     "typescript",
-    "tailwind",
     "week-view",
     "day-view",
     "time-grid"
   ],
-  "author": "",
+  "author": "Your Name <your.email@example.com>",
   "license": "MIT",
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
@@ -58,13 +61,11 @@
     "@dnd-kit/utilities": "^3.2.2"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.1.18",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
     "vite": "^7.2.4",
     "vite-plugin-dts": "^4.5.4"

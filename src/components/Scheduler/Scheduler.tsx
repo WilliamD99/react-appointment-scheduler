@@ -92,6 +92,9 @@ export function Scheduler({
     // Date picker modal state
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
+    // Selected date range (for week view highlighting)
+    const [selectedDateRange, setSelectedDateRange] = useState<{ start: Date; end: Date } | null>(null);
+
     // Drag and drop handling
     const { draggingId, handleDragStart, handleDragEnd, snapModifier } = useDragDrop({
         startHour,
@@ -189,10 +192,12 @@ export function Scheduler({
 
     // Handle date range selection (week view)
     const handleDateRangeSelect = useCallback(
-        (startDate: Date) => {
+        (startDate: Date, endDate: Date) => {
             // Set the selected date to the start of the range
             // The week view will display from this date
             setSelectedDate(startDate);
+            // Store the selected range for highlighting
+            setSelectedDateRange({ start: startDate, end: endDate });
         },
         [setSelectedDate]
     );
@@ -217,6 +222,9 @@ export function Scheduler({
         }
     }, [view, selectedDate]);
 
+    // Suppress unused variable warning
+    void goToToday;
+
     return (
         <DndContext
             sensors={sensors}
@@ -224,19 +232,18 @@ export function Scheduler({
             onDragEnd={handleDragEnd}
             modifiers={[snapModifier]}
         >
-            <div className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+            <div className="scheduler-container">
                 {/* Header with navigation and controls */}
-                <header className="flex items-center justify-between px-4 py-3 border-b border-stone-200 bg-stone-50/50">
+                <header className="scheduler-header">
                     {/* Navigation */}
-                    <div className="flex items-center gap-2">
+                    <div className="scheduler-nav">
                         <button
                             type="button"
                             onClick={goToPrevious}
-                            className="p-2 rounded-lg hover:bg-stone-100 text-stone-600 transition-colors"
+                            className="scheduler-nav-btn"
                             aria-label={view === 'day' ? 'Previous day' : 'Previous week'}
                         >
                             <svg
-                                className="w-5 h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -252,7 +259,7 @@ export function Scheduler({
                         <button
                             type="button"
                             onClick={handleNavigationLabelClick}
-                            className="min-w-[140px] px-3 py-1.5 text-center text-sm font-medium text-stone-700 hover:bg-stone-100 rounded-lg transition-colors cursor-pointer"
+                            className="scheduler-nav-label"
                             aria-label="Select date"
                         >
                             {navigationLabel}
@@ -260,11 +267,10 @@ export function Scheduler({
                         <button
                             type="button"
                             onClick={goToNext}
-                            className="p-2 rounded-lg hover:bg-stone-100 text-stone-600 transition-colors"
+                            className="scheduler-nav-btn"
                             aria-label={view === 'day' ? 'Next day' : 'Next week'}
                         >
                             <svg
-                                className="w-5 h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -280,15 +286,14 @@ export function Scheduler({
                     </div>
 
                     {/* View toggle and Create button */}
-                    <div className="flex items-center gap-3">
+                    <div className="scheduler-controls">
                         <ViewToggle view={view} onViewChange={handleViewChange} />
                         <button
                             type="button"
                             onClick={handleCreateNewClick}
-                            className="inline-flex items-center gap-2 px-4 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm hover:shadow"
+                            className="scheduler-create-btn"
                         >
                             <svg
-                                className="w-4 h-4"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -306,7 +311,7 @@ export function Scheduler({
                 </header>
 
                 {/* Main content area */}
-                <div className="flex-1 overflow-hidden relative">
+                <div className="scheduler-content">
                     {view === 'day' ? (
                         <DayView
                             date={selectedDate}
@@ -329,6 +334,7 @@ export function Scheduler({
                             onSlotClick={handleSlotClick}
                             selectedAppointmentId={selectedAppointment?.id}
                             draggingAppointmentId={draggingId}
+                            selectedDateRange={selectedDateRange}
                         />
                     )}
                 </div>
@@ -337,19 +343,13 @@ export function Scheduler({
                 <DragOverlay>
                     {draggingAppointment && (
                         <div
-                            className={`
-                px-3 py-2 rounded-lg shadow-xl border-l-4
-                ${getServiceColors(draggingAppointment.serviceType).bg}
-                ${getServiceColors(draggingAppointment.serviceType).border}
-                ${getServiceColors(draggingAppointment.serviceType).text}
-                opacity-90
-              `}
+                            className={`drag-overlay ${getServiceColors(draggingAppointment.serviceType).className}`}
                             style={{ width: '150px' }}
                         >
-                            <p className="font-semibold text-sm truncate">
+                            <p className="drag-overlay-client">
                                 {draggingAppointment.clientName}
                             </p>
-                            <p className="text-xs opacity-75">
+                            <p className="drag-overlay-service">
                                 {draggingAppointment.serviceType}
                             </p>
                         </div>

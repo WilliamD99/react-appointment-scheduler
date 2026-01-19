@@ -164,61 +164,39 @@ export const DetailPanel = memo(function DetailPanel({
   const endTime = addMinutes(appointment.startTime, appointment.duration);
 
   return (
-    <div
-      className={`
-        fixed top-0 right-0 h-full w-96 max-w-full z-40
-        transform transition-transform duration-300 ease-out
-        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
-      `}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="panel-title"
-    >
+    <div className={`side-panel ${isOpen ? 'open' : ''}`} role="dialog" aria-modal="true" aria-labelledby="panel-title">
       {/* Panel content */}
-      <div
-        ref={panelRef}
-        tabIndex={-1}
-        className="h-full bg-white shadow-2xl border-l border-stone-200 flex flex-col outline-none"
-      >
+      <div ref={panelRef} tabIndex={-1} className="side-panel-content">
         {/* Colored header strip */}
-        <div className={`h-1.5 ${colors.badge} flex-shrink-0`} />
+        <div className="panel-header-strip" style={{ backgroundColor: colors.badgeColor }} />
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-stone-200 flex-shrink-0">
-          <h2 id="panel-title" className="text-lg font-semibold text-stone-900">
+        <div className="panel-header">
+          <h2 id="panel-title" className="panel-title">
             {isEditing ? 'Edit Appointment' : 'Appointment Details'}
           </h2>
           <button
             type="button"
             onClick={isEditing ? handleCancelEdit : onClose}
-            className="p-2 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+            className="modal-close-btn"
+            style={{ position: 'static' }}
             aria-label={isEditing ? 'Cancel editing' : 'Close panel'}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="panel-body">
           {isEditing ? (
             /* Edit Mode */
-            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4">
+            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
               {/* Client Name */}
-              <div>
-                <label htmlFor="panel-clientName" className="block text-sm font-medium text-stone-700 mb-1.5">
-                  Client Name <span className="text-rose-500">*</span>
+              <div className="form-group">
+                <label htmlFor="panel-clientName" className="form-label">
+                  Client Name <span className="required">*</span>
                 </label>
                 <input
                   type="text"
@@ -226,16 +204,16 @@ export const DetailPanel = memo(function DetailPanel({
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all text-sm"
+                  className="form-input sm"
                 />
               </div>
 
               {/* Service Type */}
-              <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1.5">
-                  Service Type <span className="text-rose-500">*</span>
+              <div className="form-group">
+                <label className="form-label">
+                  Service Type <span className="required">*</span>
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="service-selector">
                   {SERVICE_OPTIONS.map((service) => {
                     const serviceColors = getServiceColors(service.value);
                     const isSelected = serviceType === service.value;
@@ -244,18 +222,11 @@ export const DetailPanel = memo(function DetailPanel({
                         key={service.value}
                         type="button"
                         onClick={() => setServiceType(service.value)}
-                        className={`
-                          px-2 py-2 rounded-lg border-2 text-left transition-all
-                          ${isSelected 
-                            ? `${serviceColors.bg} ${serviceColors.border} ${serviceColors.text}` 
-                            : 'border-stone-200 hover:border-stone-300 text-stone-600'
-                          }
-                        `}
+                        className={`service-option ${isSelected ? 'selected ' + serviceColors.className : ''}`}
+                        style={{ padding: '0.5rem' }}
                       >
-                        <span className="block font-medium text-xs">{service.label}</span>
-                        <span className={`block text-xs ${isSelected ? 'opacity-75' : 'text-stone-400'}`}>
-                          {service.duration} min
-                        </span>
+                        <span className="service-option-label" style={{ fontSize: '0.75rem' }}>{service.label}</span>
+                        <span className="service-option-duration">{service.duration} min</span>
                       </button>
                     );
                   })}
@@ -263,40 +234,40 @@ export const DetailPanel = memo(function DetailPanel({
               </div>
 
               {/* Date and Time */}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label htmlFor="panel-date" className="block text-sm font-medium text-stone-700 mb-1.5">
-                    Date <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    id="panel-date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    required
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all text-sm"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="panel-time" className="block text-sm font-medium text-stone-700 mb-1.5">
-                    Time <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="time"
-                    id="panel-time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    required
-                    className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all text-sm"
-                  />
+              <div className="form-group">
+                <div className="form-grid" style={{ gap: '0.5rem' }}>
+                  <div>
+                    <label htmlFor="panel-date" className="form-label">
+                      Date <span className="required">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      id="panel-date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      required
+                      className="form-input sm"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="panel-time" className="form-label">
+                      Time <span className="required">*</span>
+                    </label>
+                    <input
+                      type="time"
+                      id="panel-time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      required
+                      className="form-input sm"
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Duration */}
-              <div>
-                <label htmlFor="panel-duration" className="block text-sm font-medium text-stone-700 mb-1.5">
-                  Duration (minutes)
-                </label>
+              <div className="form-group">
+                <label htmlFor="panel-duration" className="form-label">Duration (minutes)</label>
                 <input
                   type="number"
                   id="panel-duration"
@@ -305,20 +276,18 @@ export const DetailPanel = memo(function DetailPanel({
                   min={15}
                   max={300}
                   step={15}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all text-sm"
+                  className="form-input sm"
                 />
               </div>
 
               {/* Artist */}
-              <div>
-                <label htmlFor="panel-artist" className="block text-sm font-medium text-stone-700 mb-1.5">
-                  Lash Artist
-                </label>
+              <div className="form-group">
+                <label htmlFor="panel-artist" className="form-label">Lash Artist</label>
                 <select
                   id="panel-artist"
                   value={artist}
                   onChange={(e) => setArtist(e.target.value)}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all bg-white text-sm"
+                  className="form-select sm"
                 >
                   <option value="">Select an artist (optional)</option>
                   {ARTIST_OPTIONS.map((name) => (
@@ -328,78 +297,53 @@ export const DetailPanel = memo(function DetailPanel({
               </div>
 
               {/* Phone */}
-              <div>
-                <label htmlFor="panel-phone" className="block text-sm font-medium text-stone-700 mb-1.5">
-                  Phone Number
-                </label>
+              <div className="form-group">
+                <label htmlFor="panel-phone" className="form-label">Phone Number</label>
                 <input
                   type="tel"
                   id="panel-phone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(555) 123-4567"
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all text-sm"
+                  className="form-input sm"
                 />
               </div>
 
               {/* Notes */}
-              <div>
-                <label htmlFor="panel-notes" className="block text-sm font-medium text-stone-700 mb-1.5">
-                  Notes
-                </label>
+              <div className="form-group">
+                <label htmlFor="panel-notes" className="form-label">Notes</label>
                 <textarea
                   id="panel-notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all resize-none text-sm"
+                  className="form-textarea sm"
                 />
               </div>
 
               {/* Delete confirmation */}
               {showDeleteConfirm ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-800 mb-2">
-                    Delete this appointment?
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowDeleteConfirm(false)}
-                      className="flex-1 px-3 py-1.5 border border-stone-300 rounded-lg text-stone-600 text-sm font-medium hover:bg-stone-50 transition-colors"
-                    >
+                <div className="delete-confirm sm">
+                  <p className="delete-confirm-text">Delete this appointment?</p>
+                  <div className="delete-confirm-actions">
+                    <button type="button" onClick={() => setShowDeleteConfirm(false)} className="btn btn-outline">
                       Cancel
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleDelete}
-                      className="flex-1 px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors"
-                    >
+                    <button type="button" onClick={handleDelete} className="btn btn-danger">
                       Delete
                     </button>
                   </div>
                 </div>
               ) : (
                 /* Actions */
-                <div className="flex gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="px-3 py-2 border border-red-300 rounded-lg text-red-600 text-sm font-medium hover:bg-red-50 transition-colors"
-                  >
+                <div className="btn-group" style={{ gap: '0.5rem' }}>
+                  <button type="button" onClick={() => setShowDeleteConfirm(true)} className="btn btn-danger-outline" style={{ flex: 'none', padding: '0.5rem 0.75rem' }}>
                     Delete
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleCancelEdit}
-                    className="flex-1 px-3 py-2 border border-stone-300 rounded-lg text-stone-600 text-sm font-medium hover:bg-stone-50 transition-colors"
-                  >
+                  <button type="button" onClick={handleCancelEdit} className="btn btn-outline" style={{ padding: '0.5rem 0.75rem' }}>
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-3 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
+                  <button type="submit" className="btn btn-primary" style={{ padding: '0.5rem 0.75rem' }}>
                     Save
                   </button>
                 </div>
@@ -409,160 +353,86 @@ export const DetailPanel = memo(function DetailPanel({
             /* View Mode */
             <>
               {/* Service badge */}
-              <div
-                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${colors.bg} ${colors.text} mb-4`}
-              >
-                <span className={`w-2 h-2 rounded-full ${colors.badge}`} />
-                <span className="text-sm font-medium">
-                  {getServiceDisplayName(appointment.serviceType)}
-                </span>
+              <div className={`service-badge ${colors.className}`}>
+                <span className="service-badge-dot" style={{ backgroundColor: colors.badgeColor }} />
+                <span className="service-badge-text">{getServiceDisplayName(appointment.serviceType)}</span>
               </div>
 
               {/* Client name */}
-              <h3 className="text-xl font-semibold text-stone-900 mb-6">
+              <h3 className="detail-client-name" style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>
                 {appointment.clientName}
               </h3>
 
               {/* Details */}
-              <div className="space-y-4">
+              <div className="detail-list" style={{ gap: '1rem' }}>
                 {/* Date */}
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-5 h-5 text-stone-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
+                <div className="detail-item">
+                  <div className="detail-icon lg">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <div className="pt-1">
-                    <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
-                      Date
-                    </p>
-                    <p className="text-stone-900 font-medium mt-0.5">
-                      {formatFullDate(appointment.startTime)}
-                    </p>
+                  <div className="detail-item-content">
+                    <p className="detail-item-label xs">Date</p>
+                    <p className="detail-item-value">{formatFullDate(appointment.startTime)}</p>
                   </div>
                 </div>
 
                 {/* Time */}
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-5 h-5 text-stone-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
+                <div className="detail-item">
+                  <div className="detail-icon lg">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <div className="pt-1">
-                    <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
-                      Time
-                    </p>
-                    <p className="text-stone-900 font-medium mt-0.5">
-                      {formatTime(appointment.startTime)} – {formatTime(endTime)}
-                    </p>
-                    <p className="text-sm text-stone-500 mt-0.5">
-                      Duration: {appointment.duration} minutes
-                    </p>
+                  <div className="detail-item-content">
+                    <p className="detail-item-label xs">Time</p>
+                    <p className="detail-item-value">{formatTime(appointment.startTime)} – {formatTime(endTime)}</p>
+                    <p className="detail-item-secondary">Duration: {appointment.duration} minutes</p>
                   </div>
                 </div>
 
                 {/* Artist */}
                 {appointment.artist && (
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center flex-shrink-0">
-                      <svg
-                        className="w-5 h-5 text-stone-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
+                  <div className="detail-item">
+                    <div className="detail-icon lg">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
-                    <div className="pt-1">
-                      <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
-                        Lash Artist
-                      </p>
-                      <p className="text-stone-900 font-medium mt-0.5">
-                        {appointment.artist}
-                      </p>
+                    <div className="detail-item-content">
+                      <p className="detail-item-label xs">Lash Artist</p>
+                      <p className="detail-item-value">{appointment.artist}</p>
                     </div>
                   </div>
                 )}
 
                 {/* Phone */}
                 {appointment.phone && (
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center flex-shrink-0">
-                      <svg
-                        className="w-5 h-5 text-stone-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                        />
+                  <div className="detail-item">
+                    <div className="detail-icon lg">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                     </div>
-                    <div className="pt-1">
-                      <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
-                        Phone
-                      </p>
-                      <p className="text-stone-900 font-medium mt-0.5">
-                        {appointment.phone}
-                      </p>
+                    <div className="detail-item-content">
+                      <p className="detail-item-label xs">Phone</p>
+                      <p className="detail-item-value">{appointment.phone}</p>
                     </div>
                   </div>
                 )}
 
                 {/* Notes */}
                 {appointment.notes && (
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center flex-shrink-0">
-                      <svg
-                        className="w-5 h-5 text-stone-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
+                  <div className="detail-item">
+                    <div className="detail-icon lg">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
-                    <div className="pt-1">
-                      <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
-                        Notes
-                      </p>
-                      <p className="text-stone-700 mt-0.5">{appointment.notes}</p>
+                    <div className="detail-item-content">
+                      <p className="detail-item-label xs">Notes</p>
+                      <p className="detail-item-text">{appointment.notes}</p>
                     </div>
                   </div>
                 )}
@@ -573,20 +443,11 @@ export const DetailPanel = memo(function DetailPanel({
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="mt-6 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl font-medium transition-colors"
+                  className="btn btn-secondary btn-full"
+                  style={{ marginTop: '1.5rem' }}
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                   Edit Appointment
                 </button>

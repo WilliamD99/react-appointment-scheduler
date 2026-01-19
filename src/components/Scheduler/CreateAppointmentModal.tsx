@@ -174,65 +174,36 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
   const colors = getServiceColors(serviceType);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="create-modal-title"
-    >
+    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="create-modal-title">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm animate-in fade-in duration-200"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className="modal-overlay" onClick={onClose} aria-hidden="true" />
 
       {/* Modal content */}
-      <div
-        ref={modalRef}
-        className="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-auto animate-in zoom-in-95 fade-in duration-200"
-      >
+      <div ref={modalRef} className="modal-content large">
         {/* Colored header */}
-        <div className={`px-6 py-4 ${colors.bg} rounded-t-2xl border-b ${colors.border}`}>
-          <h2
-            id="create-modal-title"
-            className={`text-xl font-semibold ${colors.text}`}
-          >
-            New Appointment
-          </h2>
-          <p className={`text-sm mt-1 opacity-75 ${colors.text}`}>
-            Fill in the details below to create a new booking
-          </p>
+        <div className={`modal-colored-header ${colors.className}`}>
+          <h2 id="create-modal-title">New Appointment</h2>
+          <p>Fill in the details below to create a new booking</p>
         </div>
 
         {/* Close button */}
         <button
           type="button"
           onClick={onClose}
-          className={`absolute top-4 right-4 p-2 rounded-full ${colors.text} opacity-75 hover:opacity-100 hover:bg-white/20 transition-all`}
+          className="modal-close-btn"
           aria-label="Close"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="modal-body">
           {/* Client Name */}
-          <div>
-            <label htmlFor="clientName" className="block text-sm font-medium text-stone-700 mb-1.5">
-              Client Name <span className="text-rose-500">*</span>
+          <div className="form-group">
+            <label htmlFor="clientName" className="form-label">
+              Client Name <span className="required">*</span>
             </label>
             <input
               ref={firstInputRef}
@@ -242,16 +213,16 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
               onChange={(e) => setClientName(e.target.value)}
               placeholder="Enter client's full name"
               required
-              className="w-full px-4 py-2.5 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all"
+              className="form-input"
             />
           </div>
 
           {/* Service Type */}
-          <div>
-            <label htmlFor="serviceType" className="block text-sm font-medium text-stone-700 mb-1.5">
-              Service Type <span className="text-rose-500">*</span>
+          <div className="form-group">
+            <label htmlFor="serviceType" className="form-label">
+              Service Type <span className="required">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="service-selector">
               {SERVICE_OPTIONS.map((service) => {
                 const serviceColors = getServiceColors(service.value);
                 const isSelected = serviceType === service.value;
@@ -260,18 +231,10 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
                     key={service.value}
                     type="button"
                     onClick={() => handleServiceChange(service.value)}
-                    className={`
-                      px-4 py-3 rounded-xl border-2 text-left transition-all
-                      ${isSelected 
-                        ? `${serviceColors.bg} ${serviceColors.border} ${serviceColors.text}` 
-                        : 'border-stone-200 hover:border-stone-300 text-stone-600'
-                      }
-                    `}
+                    className={`service-option ${isSelected ? 'selected ' + serviceColors.className : ''}`}
                   >
-                    <span className="block font-medium text-sm">{service.label}</span>
-                    <span className={`block text-xs mt-0.5 ${isSelected ? 'opacity-75' : 'text-stone-400'}`}>
-                      {service.duration} min
-                    </span>
+                    <span className="service-option-label">{service.label}</span>
+                    <span className="service-option-duration">{service.duration} min</span>
                   </button>
                 );
               })}
@@ -279,40 +242,40 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
           </div>
 
           {/* Date and Time */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="date" className="block text-sm font-medium text-stone-700 mb-1.5">
-                Date <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="date"
-                id="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-                className="w-full px-4 py-2.5 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all"
-              />
-            </div>
-            <div>
-              <label htmlFor="time" className="block text-sm font-medium text-stone-700 mb-1.5">
-                Time <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="time"
-                id="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                required
-                className="w-full px-4 py-2.5 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all"
-              />
+          <div className="form-group">
+            <div className="form-grid" style={{ gap: '1rem' }}>
+              <div>
+                <label htmlFor="date" className="form-label">
+                  Date <span className="required">*</span>
+                </label>
+                <input
+                  type="date"
+                  id="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                  className="form-input"
+                />
+              </div>
+              <div>
+                <label htmlFor="time" className="form-label">
+                  Time <span className="required">*</span>
+                </label>
+                <input
+                  type="time"
+                  id="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  required
+                  className="form-input"
+                />
+              </div>
             </div>
           </div>
 
           {/* Duration */}
-          <div>
-            <label htmlFor="duration" className="block text-sm font-medium text-stone-700 mb-1.5">
-              Duration (minutes)
-            </label>
+          <div className="form-group">
+            <label htmlFor="duration" className="form-label">Duration (minutes)</label>
             <input
               type="number"
               id="duration"
@@ -321,20 +284,18 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
               min={15}
               max={300}
               step={15}
-              className="w-full px-4 py-2.5 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all"
+              className="form-input"
             />
           </div>
 
           {/* Artist */}
-          <div>
-            <label htmlFor="artist" className="block text-sm font-medium text-stone-700 mb-1.5">
-              Lash Artist
-            </label>
+          <div className="form-group">
+            <label htmlFor="artist" className="form-label">Lash Artist</label>
             <select
               id="artist"
               value={artist}
               onChange={(e) => setArtist(e.target.value)}
-              className="w-full px-4 py-2.5 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all bg-white"
+              className="form-select"
             >
               <option value="">Select an artist (optional)</option>
               {ARTIST_OPTIONS.map((name) => (
@@ -344,48 +305,37 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
           </div>
 
           {/* Phone */}
-          <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-stone-700 mb-1.5">
-              Phone Number
-            </label>
+          <div className="form-group">
+            <label htmlFor="phone" className="form-label">Phone Number</label>
             <input
               type="tel"
               id="phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(555) 123-4567"
-              className="w-full px-4 py-2.5 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all"
+              className="form-input"
             />
           </div>
 
           {/* Notes */}
-          <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-stone-700 mb-1.5">
-              Notes
-            </label>
+          <div className="form-group">
+            <label htmlFor="notes" className="form-label">Notes</label>
             <textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Any special requests or notes..."
               rows={3}
-              className="w-full px-4 py-2.5 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-300 transition-all resize-none"
+              className="form-textarea"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2.5 border border-stone-300 rounded-xl text-stone-600 font-medium hover:bg-stone-50 transition-colors"
-            >
+          <div className="btn-group">
+            <button type="button" onClick={onClose} className="btn btn-outline">
               Cancel
             </button>
-            <button
-              type="submit"
-              className="flex-1 px-4 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-medium transition-colors shadow-sm hover:shadow"
-            >
+            <button type="submit" className="btn btn-primary">
               Create Appointment
             </button>
           </div>

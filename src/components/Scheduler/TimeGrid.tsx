@@ -96,22 +96,18 @@ export const TimeGrid = memo(function TimeGrid({
   const gridHeight = slots.length * SLOT_HEIGHT;
 
   return (
-    <div className="flex flex-1 overflow-hidden">
+    <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
       {/* Time column (sticky) */}
       <TimeColumn slots={slots} slotHeight={SLOT_HEIGHT} />
 
       {/* Main grid area */}
-      <div className="flex-1 relative">
+      <div style={{ flex: 1, position: 'relative' }}>
         {/* Slot rows (background grid) */}
-        <div className="absolute inset-0">
+        <div style={{ position: 'absolute', inset: 0 }}>
           {slots.map((slot) => (
             <div
               key={`slot-${slot.hour}-${slot.minute}`}
-              className={`
-                border-b transition-colors duration-100
-                ${slot.isHourStart ? 'border-stone-300' : 'border-stone-200'}
-                hover:bg-stone-100/50 cursor-pointer
-              `}
+              className={`grid-slot ${slot.isHourStart ? 'hour-start' : ''}`}
               style={{ height: `${SLOT_HEIGHT}px` }}
               onClick={() => handleSlotClick(slot)}
               role="button"
@@ -122,7 +118,7 @@ export const TimeGrid = memo(function TimeGrid({
 
         {/* Appointment blocks layer */}
         <div
-          className="absolute inset-0 pointer-events-none"
+          className="appointments-layer"
           style={{ height: `${gridHeight}px` }}
         >
           {appointmentLayouts.map((layout) => (

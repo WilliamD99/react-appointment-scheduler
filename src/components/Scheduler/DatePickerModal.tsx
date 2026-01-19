@@ -112,12 +112,12 @@ export function DatePickerModal({
     };
 
     // Check if range would exceed max days
-    const wouldExceedMaxDays = (date: Date): boolean => {
+    const wouldExceedMaxDays = useCallback((date: Date): boolean => {
         if (!rangeStart || rangeEnd) return false;
         const diff = Math.abs(date.getTime() - rangeStart.getTime());
         const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
         return days > maxRangeDays;
-    };
+    }, [rangeStart, rangeEnd, maxRangeDays]);
 
     // Handle day click
     const handleDayClick = useCallback((date: Date) => {
@@ -130,8 +130,10 @@ export function DatePickerModal({
                 setRangeStart(date);
                 setRangeEnd(null);
             } else {
-                // Complete the range
-                if (wouldExceedMaxDays(date)) return;
+                // Complete the range - check max days inline
+                const diff = Math.abs(date.getTime() - rangeStart.getTime());
+                const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
+                if (days > maxRangeDays) return;
 
                 if (date < rangeStart) {
                     setRangeEnd(rangeStart);
@@ -172,7 +174,7 @@ export function DatePickerModal({
 
     // Get day cell classes
     const getDayClasses = (date: Date): string => {
-        const classes = ['w-9 h-9 text-sm rounded-lg transition-all duration-150 font-medium'];
+        const classes = ['datepicker-day'];
 
         const isSelected = mode === 'single'
             ? isSameDay(date, selectedDate)
@@ -182,15 +184,13 @@ export function DatePickerModal({
         const isDisabled = mode === 'range' && !rangeEnd && wouldExceedMaxDays(date);
 
         if (isDisabled) {
-            classes.push('text-stone-300 cursor-not-allowed');
+            classes.push('disabled');
         } else if (isSelected) {
-            classes.push('bg-rose-500 text-white shadow-md hover:bg-rose-600');
+            classes.push('selected');
         } else if (inRange) {
-            classes.push('bg-rose-100 text-rose-700 hover:bg-rose-200');
+            classes.push('in-range');
         } else if (isToday(date)) {
-            classes.push('bg-stone-100 text-stone-900 font-semibold hover:bg-stone-200');
-        } else {
-            classes.push('text-stone-700 hover:bg-stone-100');
+            classes.push('today');
         }
 
         return classes.join(' ');
@@ -216,21 +216,18 @@ export function DatePickerModal({
         : !rangeStart;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="modal-backdrop">
             {/* Backdrop */}
-            <div
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-                onClick={onClose}
-            />
+            <div className="modal-overlay" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="datepicker-modal">
                 {/* Header */}
-                <div className="px-5 py-4 border-b border-stone-100 bg-gradient-to-b from-stone-50 to-white">
-                    <h2 className="text-lg font-semibold text-stone-800">
+                <div className="datepicker-header">
+                    <h2 className="datepicker-title">
                         {mode === 'single' ? 'Select Date' : 'Select Date Range'}
                     </h2>
-                    <p className="text-sm text-stone-500 mt-0.5">
+                    <p className="datepicker-subtitle">
                         {mode === 'single'
                             ? 'Choose a date to view'
                             : `Select up to ${maxRangeDays} days`}
@@ -238,41 +235,31 @@ export function DatePickerModal({
                 </div>
 
                 {/* Calendar */}
-                <div className="p-4">
+                <div className="datepicker-calendar">
                     {/* Month navigation */}
-                    <div className="flex items-center justify-between mb-4">
-                        <button
-                            type="button"
-                            onClick={goToPreviousMonth}
-                            className="p-2 rounded-lg hover:bg-stone-100 text-stone-600 transition-colors"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="datepicker-nav">
+                        <button type="button" onClick={goToPreviousMonth} className="datepicker-nav-btn">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                         </button>
-                        <span className="text-sm font-semibold text-stone-800">{monthLabel}</span>
-                        <button
-                            type="button"
-                            onClick={goToNextMonth}
-                            className="p-2 rounded-lg hover:bg-stone-100 text-stone-600 transition-colors"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span className="datepicker-month-label">{monthLabel}</span>
+                        <button type="button" onClick={goToNextMonth} className="datepicker-nav-btn">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                         </button>
                     </div>
 
                     {/* Weekday headers */}
-                    <div className="grid grid-cols-7 gap-1 mb-2">
+                    <div className="datepicker-weekdays">
                         {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
-                            <div key={day} className="w-9 h-8 flex items-center justify-center text-xs font-semibold text-stone-400 uppercase tracking-wide">
-                                {day}
-                            </div>
+                            <div key={day} className="datepicker-weekday">{day}</div>
                         ))}
                     </div>
 
                     {/* Days grid */}
-                    <div className="grid grid-cols-7 gap-1">
+                    <div className="datepicker-days">
                         {daysInMonth.map((date, index) => (
                             date ? (
                                 <button
@@ -287,41 +274,32 @@ export function DatePickerModal({
                                     {date.getDate()}
                                 </button>
                             ) : (
-                                <div key={`empty-${index}`} className="w-9 h-9" />
+                                <div key={`empty-${index}`} className="datepicker-day-empty" />
                             )
                         ))}
                     </div>
 
                     {/* Range info */}
                     {mode === 'range' && (
-                        <div className="mt-4 text-center text-sm text-stone-500">
-                            {rangeInfo}
-                        </div>
+                        <div className="datepicker-range-info">{rangeInfo}</div>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div className="px-5 py-4 border-t border-stone-100 bg-stone-50/50 flex items-center justify-between gap-3">
-                    <button
-                        type="button"
-                        onClick={handleGoToToday}
-                        className="px-3 py-2 text-sm font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors"
-                    >
+                <div className="datepicker-footer">
+                    <button type="button" onClick={handleGoToToday} className="btn btn-ghost">
                         Today
                     </button>
-                    <div className="flex gap-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-800 hover:bg-stone-100 rounded-lg transition-colors"
-                        >
+                    <div className="datepicker-footer-actions">
+                        <button type="button" onClick={onClose} className="btn btn-outline" style={{ padding: '0.5rem 1rem' }}>
                             Cancel
                         </button>
                         <button
                             type="button"
                             onClick={handleConfirm}
                             disabled={isConfirmDisabled}
-                            className="px-4 py-2 text-sm font-medium text-white bg-rose-500 hover:bg-rose-600 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="btn btn-primary"
+                            style={{ padding: '0.5rem 1rem' }}
                         >
                             Confirm
                         </button>
