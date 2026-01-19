@@ -27,19 +27,12 @@ This package requires React 18+ or 19+:
 npm install react react-dom
 ```
 
-### Tailwind CSS Setup
+### Styles
 
-This component uses Tailwind CSS. Add the package to your Tailwind content configuration:
+Import the component styles in your app:
 
-```js
-// tailwind.config.js
-module.exports = {
-  content: [
-    './src/**/*.{js,ts,jsx,tsx}',
-    './node_modules/react-appointment-scheduler/dist/**/*.{js,mjs}',
-  ],
-  // ...
-}
+```tsx
+import 'react-appointment-scheduler/styles.css';
 ```
 
 ## Usage
@@ -48,6 +41,7 @@ module.exports = {
 
 ```tsx
 import { Scheduler, type Appointment } from 'react-appointment-scheduler';
+import 'react-appointment-scheduler/styles.css';
 
 const appointments: Appointment[] = [
   {
@@ -71,7 +65,7 @@ const appointments: Appointment[] = [
 
 function App() {
   return (
-    <div className="h-[600px]">
+    <div style={{ height: '600px' }}>
       <Scheduler
         appointments={appointments}
         startHour={8}
@@ -131,15 +125,23 @@ interface Appointment {
 
 ### Custom Styling
 
-The component uses Tailwind CSS classes. You can customize colors by overriding the service color utilities:
+The component uses CSS custom properties (CSS variables) for theming. You can customize colors by overriding the CSS variables:
 
-```tsx
-import { getServiceColors, type ServiceType } from 'react-appointment-scheduler';
-
-// Get colors for a service type
-const colors = getServiceColors('Volume');
-// { bg: 'bg-amber-50', border: 'border-amber-300', ... }
+```css
+:root {
+  /* Override service type colors */
+  --color-rose-400: #your-custom-color;
+  --color-violet-400: #your-custom-color;
+  --color-amber-400: #your-custom-color;
+  --color-emerald-400: #your-custom-color;
+}
 ```
+
+Service type CSS classes are available for styling:
+- `.service-classic` - Rose/Pink theme
+- `.service-hybrid` - Violet/Lavender theme
+- `.service-volume` - Amber/Peach theme
+- `.service-refill` - Emerald/Sage theme
 
 ### Using Individual Components
 
@@ -178,7 +180,7 @@ formatFullDate(new Date());
 The component container should have a defined height:
 
 ```tsx
-<div className="h-[600px]">
+<div style={{ height: '600px' }}>
   <Scheduler appointments={appointments} />
 </div>
 ```
@@ -186,7 +188,7 @@ The component container should have a defined height:
 Or use viewport height:
 
 ```tsx
-<div className="h-[calc(100vh-200px)]">
+<div style={{ height: 'calc(100vh - 200px)' }}>
   <Scheduler appointments={appointments} />
 </div>
 ```
