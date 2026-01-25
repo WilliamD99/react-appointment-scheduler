@@ -50,7 +50,8 @@ export const SERVICE_COLORS: Record<ServiceType, ServiceColors> = {
  * @returns ServiceColors object with CSS class names
  */
 export function getServiceColors(serviceType: ServiceType): ServiceColors {
-  return SERVICE_COLORS[serviceType];
+  // Provide fallback if serviceType is invalid or undefined
+  return SERVICE_COLORS[serviceType] || SERVICE_COLORS.Classic;
 }
 
 /**
@@ -89,7 +90,8 @@ export function getServiceDisplayName(serviceType: ServiceType): string {
     Refill: 'Lash Refill',
   };
   
-  return names[serviceType];
+  // Provide fallback if serviceType is invalid or undefined
+  return names[serviceType] || serviceType || 'Unknown Service';
 }
 
 /**
@@ -104,5 +106,6 @@ export function getDefaultDuration(serviceType: ServiceType): number {
     Refill: 60,
   };
   
-  return durations[serviceType];
+  // Provide fallback if serviceType is invalid or undefined
+  return durations[serviceType] || 60;
 }

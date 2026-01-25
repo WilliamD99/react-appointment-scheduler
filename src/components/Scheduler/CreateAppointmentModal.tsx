@@ -1,6 +1,5 @@
-import { memo, useEffect, useRef, useState, useCallback } from 'react';
+import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { ServiceType, NewAppointmentData } from '../../types/scheduler';
-import { getServiceColors } from '../../utils/colorUtils';
 
 /**
  * CreateAppointmentModal Component
@@ -9,9 +8,9 @@ import { getServiceColors } from '../../utils/colorUtils';
  * - Client name
  * - Service type
  * - Start time
- * - Duration
- * - Artist (optional)
+ * - Email (required)
  * - Phone (optional)
+ * - Artist (optional)
  * - Notes (optional)
  */
 
@@ -26,16 +25,11 @@ interface CreateAppointmentModalProps {
   initialStartTime?: Date | null;
   /** Pre-selected end time (from slot click) */
   initialEndTime?: Date | null;
+  /** List of available technicians/artists */
+  technicians?: string[];
+  /** List of available service types */
+  services: string[];
 }
-
-const SERVICE_OPTIONS: { value: ServiceType; label: string; duration: number }[] = [
-  { value: 'Classic', label: 'Classic Lashes', duration: 90 },
-  { value: 'Hybrid', label: 'Hybrid Lashes', duration: 120 },
-  { value: 'Volume', label: 'Volume Lashes', duration: 150 },
-  { value: 'Refill', label: 'Refill', duration: 60 },
-];
-
-const ARTIST_OPTIONS = ['Emma Wilson', 'Sofia Chen', 'Maya Rodriguez'];
 
 export const CreateAppointmentModal = memo(function CreateAppointmentModal({
   isOpen,
@@ -43,17 +37,34 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
   onCreate,
   initialStartTime,
   initialEndTime,
+  technicians = [],
+  services,
 }: CreateAppointmentModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
 
+  // Create service options from provided services array
+  const serviceOptions = useMemo(() => {
+    return services.map((service) => {
+      // Format label: capitalize first letter and add "Lashes" if not already present
+      const label = service.charAt(0).toUpperCase() + service.slice(1);
+
+      return {
+        value: service as ServiceType,
+        label,
+      };
+    });
+  }, [services]);
+
   // Form state
   const [clientName, setClientName] = useState('');
-  const [serviceType, setServiceType] = useState<ServiceType>('Classic');
+  const [serviceType, setServiceType] = useState<ServiceType>(
+    serviceOptions.length > 0 ? (serviceOptions[0].value as ServiceType) : 'Classic'
+  );
   const [artist, setArtist] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [duration, setDuration] = useState(90);
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -61,11 +72,11 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
   useEffect(() => {
     if (isOpen) {
       setClientName('');
+      setEmail('');
       setPhone('');
       setNotes('');
-      setServiceType('Classic');
+      setServiceType(serviceOptions.length > 0 ? (serviceOptions[0].value as ServiceType) : 'Classic');
       setArtist('');
-      setDuration(90);
 
       if (initialStartTime) {
         // Format date as YYYY-MM-DD for input
@@ -73,7 +84,7 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
         const month = String(initialStartTime.getMonth() + 1).padStart(2, '0');
         const day = String(initialStartTime.getDate()).padStart(2, '0');
         setDate(`${year}-${month}-${day}`);
-        
+
         // Format time as HH:MM for input
         const hours = String(initialStartTime.getHours()).padStart(2, '0');
         const minutes = String(initialStartTime.getMinutes()).padStart(2, '0');
@@ -83,7 +94,6 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
         if (initialEndTime) {
           const diffMinutes = Math.round((initialEndTime.getTime() - initialStartTime.getTime()) / 60000);
           if (diffMinutes >= 30) {
-            setDuration(diffMinutes);
           }
         }
       } else {
@@ -93,12 +103,12 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         setDate(`${year}-${month}-${day}`);
-        
+
         const nextHour = now.getHours() + 1;
         setTime(`${String(nextHour).padStart(2, '0')}:00`);
       }
     }
-  }, [isOpen, initialStartTime, initialEndTime]);
+  }, [isOpen, initialStartTime, initialEndTime, serviceOptions]);
 
   // Handle escape key
   useEffect(() => {
@@ -131,20 +141,27 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
     };
   }, [isOpen]);
 
+  // Get duration based on service type
+  const getServiceDuration = useCallback((service: ServiceType): number => {
+    const durations: Record<ServiceType, number> = {
+      Classic: 90,
+      Hybrid: 120,
+      Volume: 150,
+      Refill: 60,
+    };
+    return durations[service] || 90;
+  }, []);
+
   // Update duration when service type changes
   const handleServiceChange = useCallback((newService: ServiceType) => {
     setServiceType(newService);
-    const service = SERVICE_OPTIONS.find(s => s.value === newService);
-    if (service) {
-      setDuration(service.duration);
-    }
   }, []);
 
   // Handle form submission
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!clientName.trim() || !date || !time) {
+
+    if (!clientName.trim() || !date || !time || !email.trim()) {
       return;
     }
 
@@ -153,11 +170,15 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
     const [hours, minutes] = time.split(':').map(Number);
     const startTime = new Date(year, month - 1, day, hours, minutes);
 
+    // Get duration based on service type
+    const duration = getServiceDuration(serviceType);
+
     const appointmentData: NewAppointmentData = {
       clientName: clientName.trim(),
       serviceType,
       startTime,
       duration,
+      email: email.trim(),
       ...(artist && { artist }),
       ...(phone.trim() && { phone: phone.trim() }),
       ...(notes.trim() && { notes: notes.trim() }),
@@ -165,13 +186,11 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
 
     onCreate(appointmentData);
     onClose();
-  }, [clientName, serviceType, artist, date, time, duration, phone, notes, onCreate, onClose]);
+  }, [clientName, serviceType, artist, date, time, email, phone, notes, getServiceDuration, onCreate, onClose]);
 
   if (!isOpen) {
     return null;
   }
-
-  const colors = getServiceColors(serviceType);
 
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="create-modal-title">
@@ -181,7 +200,7 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
       {/* Modal content */}
       <div ref={modalRef} className="modal-content large">
         {/* Colored header */}
-        <div className={`modal-colored-header ${colors.className}`}>
+        <div className={`modal-colored-header`}>
           <h2 id="create-modal-title">New Appointment</h2>
           <p>Fill in the details below to create a new booking</p>
         </div>
@@ -223,19 +242,17 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
               Service Type <span className="required">*</span>
             </label>
             <div className="service-selector">
-              {SERVICE_OPTIONS.map((service) => {
-                const serviceColors = getServiceColors(service.value);
+              {serviceOptions.map((service) => {
+                // Try to get colors for valid ServiceType, otherwise use default
                 const isSelected = serviceType === service.value;
                 return (
                   <button
                     key={service.value}
                     type="button"
                     onClick={() => handleServiceChange(service.value)}
-                    className={`service-option ${isSelected ? 'selected ' + serviceColors.className : ''}`}
+                    className={`service-option ${isSelected ? 'selected ' : ''}`}
                   >
-                    <span className="service-option-label">{service.label}</span>
-                    <span className="service-option-duration">{service.duration} min</span>
-                  </button>
+                    <span className="service-option-label">{service.label}</span>                  </button>
                 );
               })}
             </div>
@@ -273,17 +290,31 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
             </div>
           </div>
 
-          {/* Duration */}
+          {/* Email */}
           <div className="form-group">
-            <label htmlFor="duration" className="form-label">Duration (minutes)</label>
+            <label htmlFor="email" className="form-label">
+              Email <span className="required">*</span>
+            </label>
             <input
-              type="number"
-              id="duration"
-              value={duration}
-              onChange={(e) => setDuration(Number(e.target.value))}
-              min={15}
-              max={300}
-              step={15}
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="client@example.com"
+              required
+              className="form-input"
+            />
+          </div>
+
+          {/* Phone */}
+          <div className="form-group">
+            <label htmlFor="phone" className="form-label">Phone Number (optional)</label>
+            <input
+              type="tel"
+              id="phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(555) 123-4567"
               className="form-input"
             />
           </div>
@@ -298,23 +329,10 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
               className="form-select"
             >
               <option value="">Select an artist (optional)</option>
-              {ARTIST_OPTIONS.map((name) => (
+              {technicians.map((name) => (
                 <option key={name} value={name}>{name}</option>
               ))}
             </select>
-          </div>
-
-          {/* Phone */}
-          <div className="form-group">
-            <label htmlFor="phone" className="form-label">Phone Number</label>
-            <input
-              type="tel"
-              id="phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="(555) 123-4567"
-              className="form-input"
-            />
           </div>
 
           {/* Notes */}

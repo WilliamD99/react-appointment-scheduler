@@ -3,7 +3,7 @@
  */
 
 /** Available lash service types */
-export type ServiceType = 'Classic' | 'Hybrid' | 'Volume' | 'Refill';
+export type ServiceType = string;
 
 /** View modes for the scheduler */
 export type ViewMode = 'day' | 'week';
@@ -31,6 +31,8 @@ export interface Appointment {
   notes?: string;
   /** Optional phone number for client contact */
   phone?: string;
+  /** Email address for client contact */
+  email: string;
 }
 
 /**
@@ -42,6 +44,7 @@ export interface NewAppointmentData {
   artist?: string;
   startTime: Date;
   duration: number;
+  email: string;
   phone?: string;
   notes?: string;
 }
@@ -54,6 +57,8 @@ export interface SchedulerProps {
   appointments: Appointment[];
   /** List of technician/artist names for day view columns */
   technicians?: string[];
+  /** List of available service types */
+  services: string[];
   /** Starting hour of the work day (default: 8 for 8 AM) */
   startHour?: number;
   /** Ending hour of the work day (default: 21 for 9 PM) */

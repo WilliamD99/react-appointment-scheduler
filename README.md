@@ -123,6 +123,53 @@ interface Appointment {
 
 ## Advanced Usage
 
+### Server-Side Rendering (SSR)
+
+The package is fully compatible with SSR frameworks like Next.js, Remix, and others. When using with Next.js App Router:
+
+```tsx
+'use client'; // Required for client components
+
+import { Scheduler } from 'react-appointment-scheduler';
+import 'react-appointment-scheduler/styles.css';
+
+export default function SchedulerPage() {
+  return (
+    <div style={{ height: '600px' }}>
+      <Scheduler
+        appointments={appointments}
+        startHour={8}
+        endHour={21}
+      />
+    </div>
+  );
+}
+```
+
+The component automatically handles SSR gracefully - all browser APIs (`localStorage`, `window`, `document`) are safely accessed only on the client side.
+
+### Dark/Light Theme Support
+
+The package includes built-in theme support. See [THEME_DOCS.md](./THEME_DOCS.md) for detailed documentation.
+
+```tsx
+import { ThemeToggle, initializeTheme } from 'react-appointment-scheduler';
+import { useEffect } from 'react';
+
+function App() {
+  useEffect(() => {
+    initializeTheme();
+  }, []);
+
+  return (
+    <div>
+      <ThemeToggle />
+      <Scheduler {...props} />
+    </div>
+  );
+}
+```
+
 ### Custom Styling
 
 The component uses CSS custom properties (CSS variables) for theming. You can customize colors by overriding the CSS variables:

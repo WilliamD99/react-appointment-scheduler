@@ -82,6 +82,9 @@ const TechnicianColumn = memo(function TechnicianColumn({
     data: { date, technician },
   });
 
+  // Provide a safe ref callback in case DndContext is not available
+  const safeSetNodeRef = setNodeRef || (() => { });
+
   // Filter appointments for this technician only
   const technicianAppointments = useMemo(() => {
     return appointments.filter((apt) => apt.artist === technician);
@@ -110,7 +113,7 @@ const TechnicianColumn = memo(function TechnicianColumn({
 
   return (
     <div
-      ref={setNodeRef}
+      ref={safeSetNodeRef}
       className={`tech-column ${isOver ? 'drag-over' : ''}`}
     >
       {/* Technician header */}

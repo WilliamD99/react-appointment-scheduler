@@ -8,6 +8,7 @@ import { getServiceColors } from '../../utils/colorUtils';
 import { DayView } from './DayView';
 import { WeekView } from './WeekView';
 import { ViewToggle } from './ViewToggle';
+import { ThemeToggle } from './ThemeToggle';
 import { DetailModal } from './DetailModal';
 import { DetailPanel } from './DetailPanel';
 import { CreateAppointmentModal } from './CreateAppointmentModal';
@@ -44,6 +45,7 @@ import { DatePickerModal } from './DatePickerModal';
 export function Scheduler({
     appointments,
     technicians: providedTechnicians,
+    services,
     startHour = 8,
     endHour = 21,
     view: initialView = 'week',
@@ -149,13 +151,13 @@ export function Scheduler({
     const handleCreateAppointment = useCallback(
         (appointmentData: NewAppointmentData) => {
             // Call the new callback with full data if provided
+            // Includes: clientName, serviceType, startTime, duration, email, artist, phone, notes
             if (onNewAppointment) {
                 onNewAppointment(appointmentData);
             }
             // Also call legacy callback for backward compatibility
             if (onCreateAppointment) {
                 const endTime = new Date(appointmentData.startTime);
-                endTime.setMinutes(endTime.getMinutes() + appointmentData.duration);
                 onCreateAppointment(appointmentData.startTime, endTime);
             }
         },
@@ -285,8 +287,9 @@ export function Scheduler({
                         </button>
                     </div>
 
-                    {/* View toggle and Create button */}
+                    {/* Theme toggle, View toggle and Create button */}
                     <div className="scheduler-controls">
+                        <ThemeToggle />
                         <ViewToggle view={view} onViewChange={handleViewChange} />
                         <button
                             type="button"
@@ -364,6 +367,7 @@ export function Scheduler({
                         onClose={closeDetail}
                         onUpdate={onUpdateAppointment}
                         onDelete={onDeleteAppointment}
+                        services={services}
                     />
                 ) : (
                     <DetailPanel
@@ -372,6 +376,7 @@ export function Scheduler({
                         onClose={closeDetail}
                         onUpdate={onUpdateAppointment}
                         onDelete={onDeleteAppointment}
+                        services={services}
                     />
                 )}
 
@@ -382,6 +387,8 @@ export function Scheduler({
                     onCreate={handleCreateAppointment}
                     initialStartTime={createModalStartTime}
                     initialEndTime={createModalEndTime}
+                    technicians={technicians}
+                    services={services}
                 />
 
                 {/* Date picker modal */}

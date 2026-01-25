@@ -1,6 +1,6 @@
-import { memo, useEffect, useRef, useState, useCallback } from 'react';
+import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { Appointment, ServiceType } from '../../types/scheduler';
-import { getServiceColors, getServiceDisplayName } from '../../utils/colorUtils';
+import { getServiceColors, getServiceDisplayName, getDefaultDuration } from '../../utils/colorUtils';
 import { formatTime, formatFullDate, addMinutes } from '../../utils/timeUtils';
 
 /**
@@ -28,14 +28,9 @@ interface DetailPanelProps {
   onUpdate?: (appointment: Appointment) => void;
   /** Callback when appointment is deleted */
   onDelete?: (id: string) => void;
+  /** List of available service types */
+  services: string[];
 }
-
-const SERVICE_OPTIONS: { value: ServiceType; label: string; duration: number }[] = [
-  { value: 'Classic', label: 'Classic Lashes', duration: 90 },
-  { value: 'Hybrid', label: 'Hybrid Lashes', duration: 120 },
-  { value: 'Volume', label: 'Volume Lashes', duration: 150 },
-  { value: 'Refill', label: 'Refill', duration: 60 },
-];
 
 const ARTIST_OPTIONS = ['Emma Wilson', 'Sofia Chen', 'Maya Rodriguez'];
 
@@ -45,10 +40,31 @@ export const DetailPanel = memo(function DetailPanel({
   onClose,
   onUpdate,
   onDelete,
+  services,
 }: DetailPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Create service options from provided services array
+  const serviceOptions = useMemo(() => {
+    return services.map((service) => {
+      // Check if service is a valid ServiceType
+      const isValidServiceType = ['Classic', 'Hybrid', 'Volume', 'Refill'].includes(service);
+      const duration = isValidServiceType 
+        ? getDefaultDuration(service as ServiceType)
+        : 90; // Default duration for unknown services
+      
+      // Format label: capitalize first letter and add "Lashes" if not already present
+      const label = service.charAt(0).toUpperCase() + service.slice(1);
+      
+      return {
+        value: service as ServiceType,
+        label,
+        duration,
+      };
+    });
+  }, [services]);
 
   // Form state for editing
   const [clientName, setClientName] = useState('');
@@ -57,6 +73,7 @@ export const DetailPanel = memo(function DetailPanel({
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [duration, setDuration] = useState(90);
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -67,6 +84,7 @@ export const DetailPanel = memo(function DetailPanel({
       setServiceType(appointment.serviceType);
       setArtist(appointment.artist || '');
       setDuration(appointment.duration);
+      setEmail(appointment.email || '');
       setPhone(appointment.phone || '');
       setNotes(appointment.notes || '');
 
@@ -116,7 +134,7 @@ export const DetailPanel = memo(function DetailPanel({
 
   // Handle save
   const handleSave = useCallback(() => {
-    if (!appointment || !clientName.trim() || !date || !time) {
+    if (!appointment || !clientName.trim() || !date || !time || !email.trim()) {
       return;
     }
 
@@ -131,6 +149,7 @@ export const DetailPanel = memo(function DetailPanel({
       serviceType,
       startTime,
       duration,
+      email: email.trim(),
       ...(artist && { artist }),
       ...(phone.trim() && { phone: phone.trim() }),
       ...(notes.trim() && { notes: notes.trim() }),
@@ -140,7 +159,7 @@ export const DetailPanel = memo(function DetailPanel({
       onUpdate(updatedAppointment);
     }
     setIsEditing(false);
-  }, [appointment, clientName, serviceType, artist, date, time, duration, phone, notes, onUpdate]);
+  }, [appointment, clientName, serviceType, artist, date, time, duration, email, phone, notes, onUpdate]);
 
   // Handle delete
   const handleDelete = useCallback(() => {
@@ -214,14 +233,24 @@ export const DetailPanel = memo(function DetailPanel({
                   Service Type <span className="required">*</span>
                 </label>
                 <div className="service-selector">
-                  {SERVICE_OPTIONS.map((service) => {
-                    const serviceColors = getServiceColors(service.value);
+                  {serviceOptions.map((service) => {
+                    // Try to get colors for valid ServiceType, otherwise use default
+                    let serviceColors;
+                    try {
+                      serviceColors = getServiceColors(service.value);
+                    } catch {
+                      // Fallback for unknown service types
+                      serviceColors = { className: 'service-classic', badgeColor: 'var(--color-rose-400)' };
+                    }
                     const isSelected = serviceType === service.value;
                     return (
                       <button
                         key={service.value}
                         type="button"
-                        onClick={() => setServiceType(service.value)}
+                        onClick={() => {
+                          setServiceType(service.value);
+                          setDuration(service.duration);
+                        }}
                         className={`service-option ${isSelected ? 'selected ' + serviceColors.className : ''}`}
                         style={{ padding: '0.5rem' }}
                       >
@@ -296,9 +325,25 @@ export const DetailPanel = memo(function DetailPanel({
                 </select>
               </div>
 
+              {/* Email */}
+              <div className="form-group">
+                <label htmlFor="panel-email" className="form-label">
+                  Email <span className="required">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="panel-email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="client@example.com"
+                  required
+                  className="form-input sm"
+                />
+              </div>
+
               {/* Phone */}
               <div className="form-group">
-                <label htmlFor="panel-phone" className="form-label">Phone Number</label>
+                <label htmlFor="panel-phone" className="form-label">Phone Number (optional)</label>
                 <input
                   type="tel"
                   id="panel-phone"
@@ -403,6 +448,21 @@ export const DetailPanel = memo(function DetailPanel({
                     <div className="detail-item-content">
                       <p className="detail-item-label xs">Lash Artist</p>
                       <p className="detail-item-value">{appointment.artist}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Email */}
+                {appointment.email && (
+                  <div className="detail-item">
+                    <div className="detail-icon lg">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div className="detail-item-content">
+                      <p className="detail-item-label xs">Email</p>
+                      <p className="detail-item-value">{appointment.email}</p>
                     </div>
                   </div>
                 )}

@@ -52,6 +52,9 @@ export const AppointmentBlock = memo(function AppointmentBlock({
     data: { appointment },
   });
 
+  // Provide a safe ref callback in case DndContext is not available
+  const safeSetNodeRef = setNodeRef || (() => {});
+
   // Calculate end time for display
   const endTime = addMinutes(appointment.startTime, appointment.duration);
   
@@ -99,7 +102,7 @@ export const AppointmentBlock = memo(function AppointmentBlock({
 
   return (
     <div
-      ref={setNodeRef}
+      ref={safeSetNodeRef}
       style={style}
       className={classNames}
       onClick={handleClick}

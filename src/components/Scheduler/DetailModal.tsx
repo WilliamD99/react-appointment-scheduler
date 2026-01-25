@@ -1,7 +1,7 @@
-import { memo, useEffect, useRef, useState, useCallback } from 'react';
+import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { Appointment, ServiceType } from '../../types/scheduler';
-import { getServiceColors, getServiceDisplayName } from '../../utils/colorUtils';
-import { formatTime, formatFullDate, addMinutes } from '../../utils/timeUtils';
+import { getServiceDisplayName } from '../../utils/colorUtils';
+import { formatFullDate } from '../../utils/timeUtils';
 
 /**
  * DetailModal Component
@@ -28,14 +28,9 @@ interface DetailModalProps {
   onUpdate?: (appointment: Appointment) => void;
   /** Callback when appointment is deleted */
   onDelete?: (id: string) => void;
+  /** List of available service types */
+  services: string[];
 }
-
-const SERVICE_OPTIONS: { value: ServiceType; label: string; duration: number }[] = [
-  { value: 'Classic', label: 'Classic Lashes', duration: 90 },
-  { value: 'Hybrid', label: 'Hybrid Lashes', duration: 120 },
-  { value: 'Volume', label: 'Volume Lashes', duration: 150 },
-  { value: 'Refill', label: 'Refill', duration: 60 },
-];
 
 const ARTIST_OPTIONS = ['Emma Wilson', 'Sofia Chen', 'Maya Rodriguez'];
 
@@ -45,10 +40,24 @@ export const DetailModal = memo(function DetailModal({
   onClose,
   onUpdate,
   onDelete,
+  services,
 }: DetailModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Create service options from provided services array
+  const serviceOptions = useMemo(() => {
+    return services.map((service) => {
+      // Format label: capitalize first letter and add "Lashes" if not already present
+      const label = service.charAt(0).toUpperCase() + service.slice(1);
+
+      return {
+        value: service as ServiceType,
+        label,
+      };
+    });
+  }, [services]);
 
   // Form state for editing
   const [clientName, setClientName] = useState('');
@@ -56,8 +65,6 @@ export const DetailModal = memo(function DetailModal({
   const [artist, setArtist] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [duration, setDuration] = useState(90);
-  const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
 
   // Initialize form when appointment changes or edit mode is entered
@@ -66,8 +73,6 @@ export const DetailModal = memo(function DetailModal({
       setClientName(appointment.clientName);
       setServiceType(appointment.serviceType);
       setArtist(appointment.artist || '');
-      setDuration(appointment.duration);
-      setPhone(appointment.phone || '');
       setNotes(appointment.notes || '');
 
       // Format date as YYYY-MM-DD for input
@@ -128,7 +133,7 @@ export const DetailModal = memo(function DetailModal({
 
   // Handle save
   const handleSave = useCallback(() => {
-    if (!appointment || !clientName.trim() || !date || !time) {
+    if (!appointment || !date || !time) {
       return;
     }
 
@@ -139,12 +144,13 @@ export const DetailModal = memo(function DetailModal({
 
     const updatedAppointment: Appointment = {
       id: appointment.id,
-      clientName: clientName.trim(),
+      clientName: appointment.clientName, // Keep original client name
       serviceType,
       startTime,
-      duration,
+      duration: appointment.duration, // Keep original duration
+      email: appointment.email, // Keep original email
       ...(artist && { artist }),
-      ...(phone.trim() && { phone: phone.trim() }),
+      ...(appointment.phone && { phone: appointment.phone }), // Keep original phone
       ...(notes.trim() && { notes: notes.trim() }),
     };
 
@@ -152,7 +158,7 @@ export const DetailModal = memo(function DetailModal({
       onUpdate(updatedAppointment);
     }
     setIsEditing(false);
-  }, [appointment, clientName, serviceType, artist, date, time, duration, phone, notes, onUpdate]);
+  }, [appointment, serviceType, artist, date, time, notes, onUpdate]);
 
   // Handle delete
   const handleDelete = useCallback(() => {
@@ -172,8 +178,6 @@ export const DetailModal = memo(function DetailModal({
     return null;
   }
 
-  const colors = getServiceColors(isEditing ? serviceType : appointment.serviceType);
-  const endTime = addMinutes(appointment.startTime, appointment.duration);
 
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -189,7 +193,6 @@ export const DetailModal = memo(function DetailModal({
         {/* Colored header strip */}
         <div
           className="modal-header-strip"
-          style={{ backgroundColor: colors.badgeColor }}
         />
 
         {/* Close button */}
@@ -210,18 +213,18 @@ export const DetailModal = memo(function DetailModal({
             <h2 className="modal-title">Edit Appointment</h2>
 
             <form onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-              {/* Client Name */}
+              {/* Client Name (read-only in edit mode) */}
               <div className="form-group">
                 <label htmlFor="edit-clientName" className="form-label">
-                  Client Name <span className="required">*</span>
+                  Client Name
                 </label>
                 <input
                   type="text"
                   id="edit-clientName"
                   value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  required
+                  disabled
                   className="form-input"
+                  style={{ backgroundColor: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }}
                 />
               </div>
 
@@ -231,18 +234,18 @@ export const DetailModal = memo(function DetailModal({
                   Service Type <span className="required">*</span>
                 </label>
                 <div className="service-selector">
-                  {SERVICE_OPTIONS.map((service) => {
-                    const serviceColors = getServiceColors(service.value);
+                  {serviceOptions.map((service) => {
                     const isSelected = serviceType === service.value;
                     return (
                       <button
                         key={service.value}
                         type="button"
-                        onClick={() => setServiceType(service.value)}
-                        className={`service-option ${isSelected ? 'selected ' + serviceColors.className : ''}`}
+                        onClick={() => {
+                          setServiceType(service.value);
+                        }}
+                        className={`service-option ${isSelected ? 'selected ' : ''}`}
                       >
                         <span className="service-option-label">{service.label}</span>
-                        <span className="service-option-duration">{service.duration} min</span>
                       </button>
                     );
                   })}
@@ -281,21 +284,6 @@ export const DetailModal = memo(function DetailModal({
                 </div>
               </div>
 
-              {/* Duration */}
-              <div className="form-group">
-                <label htmlFor="edit-duration" className="form-label">Duration (minutes)</label>
-                <input
-                  type="number"
-                  id="edit-duration"
-                  value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
-                  min={15}
-                  max={300}
-                  step={15}
-                  className="form-input"
-                />
-              </div>
-
               {/* Artist */}
               <div className="form-group">
                 <label htmlFor="edit-artist" className="form-label">Lash Artist</label>
@@ -312,18 +300,6 @@ export const DetailModal = memo(function DetailModal({
                 </select>
               </div>
 
-              {/* Phone */}
-              <div className="form-group">
-                <label htmlFor="edit-phone" className="form-label">Phone Number</label>
-                <input
-                  type="tel"
-                  id="edit-phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="(555) 123-4567"
-                  className="form-input"
-                />
-              </div>
 
               {/* Notes */}
               <div className="form-group">
@@ -372,8 +348,8 @@ export const DetailModal = memo(function DetailModal({
           /* View Mode */
           <div className="modal-body">
             {/* Service badge */}
-            <div className={`service-badge ${colors.className}`}>
-              <span className="service-badge-dot" style={{ backgroundColor: colors.badgeColor }} />
+            <div className={`service-badge`}>
+              <span className="service-badge-dot" />
               <span className="service-badge-text">{getServiceDisplayName(appointment.serviceType)}</span>
             </div>
 
@@ -402,11 +378,6 @@ export const DetailModal = memo(function DetailModal({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div>
-                  <p className="detail-item-label">Time</p>
-                  <p className="detail-item-value">{formatTime(appointment.startTime)} – {formatTime(endTime)}</p>
-                  <p className="detail-item-secondary">{appointment.duration} minutes</p>
-                </div>
               </div>
 
               {/* Artist (if assigned) */}
@@ -420,6 +391,21 @@ export const DetailModal = memo(function DetailModal({
                   <div>
                     <p className="detail-item-label">Lash Artist</p>
                     <p className="detail-item-value">{appointment.artist}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Email */}
+              {appointment.email && (
+                <div className="detail-item">
+                  <div className="detail-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="detail-item-label">Email</p>
+                    <p className="detail-item-value">{appointment.email}</p>
                   </div>
                 </div>
               )}

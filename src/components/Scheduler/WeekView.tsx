@@ -89,6 +89,9 @@ const DayColumn = memo(function DayColumn({
     id: `day-${date.toISOString()}`,
     data: { date },
   });
+
+  // Provide a safe ref callback in case DndContext is not available
+  const safeSetNodeRef = setNodeRef || (() => {});
   
   // Calculate layouts for this day's appointments
   const layouts = useMemo(() => {
@@ -114,7 +117,7 @@ const DayColumn = memo(function DayColumn({
 
   return (
     <div 
-      ref={setNodeRef}
+      ref={safeSetNodeRef}
       className={`day-column ${isOver ? 'drag-over' : ''} ${isInSelectedRange ? 'in-selected-range' : ''}`}
     >
       {/* Day header */}

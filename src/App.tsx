@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Scheduler, type Appointment, type DetailDisplayMode, type NewAppointmentData } from './components/Scheduler';
+import { initializeTheme } from './utils/themeUtils';
 
 /**
  * Demo Application
@@ -18,6 +19,7 @@ function generateMockAppointments(): Appointment[] {
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
 
     const artists = ['Emma Wilson', 'Sofia Chen', 'Maya Rodriguez'];
+    const services = ['Classic', 'Hybrid', 'Volume', 'Refill'];
 
     const appointments: Appointment[] = [
         // Today's appointments
@@ -199,6 +201,15 @@ function addDays(date: Date, days: number): Date {
 }
 
 export default function App() {
+    // Initialize theme on mount
+    useEffect(() => {
+        initializeTheme();
+    }, []);
+
+    // Define technicians and services
+    const technicians = ['Emma Wilson', 'Sofia Chen', 'Maya Rodriguez'];
+    const services = ['Classic', 'Hybrid', 'Volume', 'Refill'];
+
     // State for appointments (allows rescheduling demo)
     const [appointments, setAppointments] = useState<Appointment[]>(
         generateMockAppointments
@@ -307,6 +318,8 @@ export default function App() {
                     <div className="scheduler-wrapper">
                         <Scheduler
                             appointments={appointments}
+                            technicians={technicians}
+                            services={services}
                             startHour={8}
                             endHour={21}
                             view="week"

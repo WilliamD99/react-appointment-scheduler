@@ -21,6 +21,7 @@ export { DetailModal } from './DetailModal';
 export { DetailPanel } from './DetailPanel';
 export { CreateAppointmentModal } from './CreateAppointmentModal';
 export { DatePickerModal } from './DatePickerModal';
+export { ThemeToggle } from './ThemeToggle';
 
 // Re-export types
 export type {
@@ -34,6 +35,8 @@ export type {
   NewAppointmentData,
 } from '../../types/scheduler';
 
+export type { ThemeToggleProps } from './ThemeToggle';
+
 // Re-export hooks for advanced usage
 export { useScheduler } from '../../hooks/useScheduler';
 export { useDragDrop } from '../../hooks/useDragDrop';
@@ -42,3 +45,4 @@ export { useDragDrop } from '../../hooks/useDragDrop';
 export * from '../../utils/timeUtils';
 export * from '../../utils/layoutUtils';
 export * from '../../utils/colorUtils';
+export * from '../../utils/themeUtils';
