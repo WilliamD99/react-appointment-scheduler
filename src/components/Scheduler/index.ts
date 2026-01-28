@@ -27,12 +27,15 @@ export { ThemeToggle } from './ThemeToggle';
 export type {
   Appointment,
   SchedulerProps,
+  Service,
   ServiceType,
+  Technician,
   ViewMode,
   DetailDisplayMode,
   AppointmentLayout,
   TimeSlot,
   NewAppointmentData,
+  TechnicianServices,
 } from '../../types/scheduler';
 
 export type { ThemeToggleProps } from './ThemeToggle';

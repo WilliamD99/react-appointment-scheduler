@@ -129,6 +129,28 @@
   --scheduler-color-red-50: rgba(254, 242, 242, 0.1);
 }
 
+/* Dark mode: stronger focus/selected rings for form controls */
+[data-theme="dark"] .form-input:focus,
+[data-theme="dark"] .form-select:focus,
+[data-theme="dark"] .form-textarea:focus {
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.4);
+}
+
+[data-theme="dark"] .form-input:focus-visible,
+[data-theme="dark"] .form-select:focus-visible,
+[data-theme="dark"] .form-textarea:focus-visible {
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.45);
+}
+
+[data-theme="dark"] .service-option.selected {
+  background-color: rgba(251, 113, 133, 0.12);
+}
+
+[data-theme="dark"] .service-option.selected:focus,
+[data-theme="dark"] .service-option.selected:focus-visible {
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.4);
+}
+
 /* ============================================
    Base Styles & Resets
    ============================================ */
@@ -827,17 +849,48 @@
   border: 1px solid var(--scheduler-border-secondary);
   border-radius: var(--scheduler-border-radius-xl);
   font-size: 0.875rem;
-  transition: all var(--scheduler-transition-fast);
+  transition: border-color var(--scheduler-transition-fast),
+    box-shadow var(--scheduler-transition-fast),
+    background-color var(--scheduler-transition-fast);
   background-color: var(--scheduler-bg-primary);
   color: var(--scheduler-text-primary);
+  outline: none;
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--scheduler-text-tertiary);
+  opacity: 0.9;
+}
+
+.form-input:hover:not(:disabled):not(:focus),
+.form-select:hover:not(:disabled):not(:focus),
+.form-textarea:hover:not(:disabled):not(:focus) {
+  border-color: var(--scheduler-border-tertiary);
 }
 
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
-  outline: none;
-  border-color: var(--scheduler-color-rose-300);
-  box-shadow: 0 0 0 3px var(--scheduler-color-rose-200);
+  border-color: var(--scheduler-color-rose-400);
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.25);
+}
+
+.form-input:focus-visible,
+.form-select:focus-visible,
+.form-textarea:focus-visible {
+  border-color: var(--scheduler-color-rose-400);
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.3);
+}
+
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background-color: var(--scheduler-bg-secondary);
+  color: var(--scheduler-text-tertiary);
+  cursor: not-allowed;
+  border-color: var(--scheduler-border-primary);
+  opacity: 0.85;
 }
 
 .form-input.sm,
@@ -851,10 +904,36 @@
   resize: none;
 }
 
+.form-helper-text {
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--scheduler-text-secondary);
+  font-style: italic;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
+}
+
+/* Service category grouping */
+.service-category {
+  margin-bottom: 1rem;
+}
+
+.service-category:last-child {
+  margin-bottom: 0;
+}
+
+.service-category-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--scheduler-text-secondary);
+  margin-bottom: 0.5rem;
 }
 
 /* Service type selector */
@@ -869,10 +948,13 @@
   border: 2px solid var(--scheduler-border-primary);
   border-radius: var(--scheduler-border-radius-xl);
   text-align: left;
-  transition: all var(--scheduler-transition-fast);
+  transition: border-color var(--scheduler-transition-fast),
+    background-color var(--scheduler-transition-fast),
+    box-shadow var(--scheduler-transition-fast);
   background: var(--scheduler-bg-primary);
   color: var(--scheduler-text-primary);
   cursor: pointer;
+  outline: none;
 }
 
 .service-option:hover {
@@ -880,7 +962,23 @@
 }
 
 .service-option.selected {
-  border-width: 2px;
+  border-color: var(--scheduler-color-rose-400);
+  background-color: var(--scheduler-color-rose-50);
+  box-shadow: 0 0 0 2px var(--scheduler-color-rose-200);
+  color: var(--scheduler-text-primary);
+}
+
+.service-option:focus,
+.service-option:focus-visible {
+  border-color: var(--scheduler-color-rose-400);
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.3);
+}
+
+.service-option.selected:focus,
+.service-option.selected:focus-visible {
+  border-color: var(--scheduler-color-rose-500);
+  background-color: var(--scheduler-color-rose-50);
+  box-shadow: 0 0 0 3px var(--scheduler-color-rose-200);
 }
 
 .service-option-label {

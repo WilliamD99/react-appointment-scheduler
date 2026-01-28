@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import type { Appointment, ServiceType } from '../../types/scheduler';
-import { getServiceColors, getServiceDisplayName, getDefaultDuration } from '../../utils/colorUtils';
+import type { Appointment, ServiceType, Service, Technician } from '../../types/scheduler';
+import { getArtistId, getArtistDisplayName } from '../../utils/artistUtils';
+import { getServiceColors } from '../../utils/colorUtils';
 import { formatTime, formatFullDate, addMinutes } from '../../utils/timeUtils';
 
 /**
@@ -28,11 +29,11 @@ interface DetailPanelProps {
   onUpdate?: (appointment: Appointment) => void;
   /** Callback when appointment is deleted */
   onDelete?: (id: string) => void;
-  /** List of available service types */
-  services: string[];
+  /** List of available services with id, name, and category */
+  services: Service[];
+  /** List of available technicians with id and name */
+  technicians?: Technician[];
 }
-
-const ARTIST_OPTIONS = ['Emma Wilson', 'Sofia Chen', 'Maya Rodriguez'];
 
 export const DetailPanel = memo(function DetailPanel({
   appointment,
@@ -41,30 +42,34 @@ export const DetailPanel = memo(function DetailPanel({
   onUpdate,
   onDelete,
   services,
+  technicians = [],
 }: DetailPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Create service options from provided services array
-  const serviceOptions = useMemo(() => {
-    return services.map((service) => {
-      // Check if service is a valid ServiceType
-      const isValidServiceType = ['Classic', 'Hybrid', 'Volume', 'Refill'].includes(service);
-      const duration = isValidServiceType 
-        ? getDefaultDuration(service as ServiceType)
-        : 90; // Default duration for unknown services
-      
-      // Format label: capitalize first letter and add "Lashes" if not already present
-      const label = service.charAt(0).toUpperCase() + service.slice(1);
-      
-      return {
-        value: service as ServiceType,
-        label,
-        duration,
-      };
+  // Group services by category for the edit dropdown
+  const servicesByCategory = useMemo(() => {
+    const grouped: Record<string, Service[]> = {};
+    services.forEach((service) => {
+      if (!grouped[service.category]) {
+        grouped[service.category] = [];
+      }
+      grouped[service.category].push(service);
     });
+    return grouped;
   }, [services]);
+
+  // Helper to get service by ID
+  const getServiceById = useCallback((serviceId: string): Service | undefined => {
+    return services.find(s => s.id === serviceId);
+  }, [services]);
+
+  // Helper to get service name by ID
+  const getServiceName = useCallback((serviceId: string): string => {
+    const service = getServiceById(serviceId);
+    return service?.name ?? serviceId;
+  }, [getServiceById]);
 
   // Form state for editing
   const [clientName, setClientName] = useState('');
@@ -82,7 +87,7 @@ export const DetailPanel = memo(function DetailPanel({
     if (appointment && isEditing) {
       setClientName(appointment.clientName);
       setServiceType(appointment.serviceType);
-      setArtist(appointment.artist || '');
+      setArtist(getArtistId(appointment.artist) || '');
       setDuration(appointment.duration);
       setEmail(appointment.email || '');
       setPhone(appointment.phone || '');
@@ -230,36 +235,48 @@ export const DetailPanel = memo(function DetailPanel({
               {/* Service Type */}
               <div className="form-group">
                 <label className="form-label">
-                  Service Type <span className="required">*</span>
+                  Service <span className="required">*</span>
                 </label>
-                <div className="service-selector">
-                  {serviceOptions.map((service) => {
-                    // Try to get colors for valid ServiceType, otherwise use default
-                    let serviceColors;
-                    try {
-                      serviceColors = getServiceColors(service.value);
-                    } catch {
-                      // Fallback for unknown service types
-                      serviceColors = { className: 'service-classic', badgeColor: 'var(--color-rose-400)' };
-                    }
-                    const isSelected = serviceType === service.value;
-                    return (
-                      <button
-                        key={service.value}
-                        type="button"
-                        onClick={() => {
-                          setServiceType(service.value);
-                          setDuration(service.duration);
-                        }}
-                        className={`service-option ${isSelected ? 'selected ' + serviceColors.className : ''}`}
-                        style={{ padding: '0.5rem' }}
-                      >
-                        <span className="service-option-label" style={{ fontSize: '0.75rem' }}>{service.label}</span>
-                        <span className="service-option-duration">{service.duration} min</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                {/* Services grouped by category */}
+                {Object.keys(servicesByCategory).map((category) => (
+                  <div key={category} className="service-category">
+                    <span className="service-category-label">
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </span>
+                    <div className="service-selector">
+                      {servicesByCategory[category].map((service) => {
+                        // Try to get colors for valid ServiceType, otherwise use default
+                        let serviceColors;
+                        try {
+                          serviceColors = getServiceColors(service.id);
+                        } catch {
+                          // Fallback for unknown service types
+                          serviceColors = { className: 'service-classic', badgeColor: 'var(--color-rose-400)' };
+                        }
+                        const isSelected = serviceType === service.id;
+                        return (
+                          <button
+                            key={service.id}
+                            type="button"
+                            onClick={() => {
+                              setServiceType(service.id);
+                              if (service.duration) {
+                                setDuration(service.duration);
+                              }
+                            }}
+                            className={`service-option ${isSelected ? 'selected ' + serviceColors.className : ''}`}
+                            style={{ padding: '0.5rem' }}
+                          >
+                            <span className="service-option-label" style={{ fontSize: '0.75rem' }}>{service.name}</span>
+                            {service.duration && (
+                              <span className="service-option-duration">{service.duration} min</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Date and Time */}
@@ -309,18 +326,18 @@ export const DetailPanel = memo(function DetailPanel({
                 />
               </div>
 
-              {/* Artist */}
+              {/* Technician */}
               <div className="form-group">
-                <label htmlFor="panel-artist" className="form-label">Lash Artist</label>
+                <label htmlFor="panel-technician" className="form-label">Technician</label>
                 <select
-                  id="panel-artist"
+                  id="panel-technician"
                   value={artist}
                   onChange={(e) => setArtist(e.target.value)}
                   className="form-select sm"
                 >
-                  <option value="">Select an artist (optional)</option>
-                  {ARTIST_OPTIONS.map((name) => (
-                    <option key={name} value={name}>{name}</option>
+                  <option value="">Select a technician (optional)</option>
+                  {technicians.map((tech) => (
+                    <option key={tech.id} value={tech.id}>{tech.name}</option>
                   ))}
                 </select>
               </div>
@@ -400,7 +417,7 @@ export const DetailPanel = memo(function DetailPanel({
               {/* Service badge */}
               <div className={`service-badge ${colors.className}`}>
                 <span className="service-badge-dot" style={{ backgroundColor: colors.badgeColor }} />
-                <span className="service-badge-text">{getServiceDisplayName(appointment.serviceType)}</span>
+                <span className="service-badge-text">{getServiceName(appointment.serviceType)}</span>
               </div>
 
               {/* Client name */}
@@ -437,8 +454,8 @@ export const DetailPanel = memo(function DetailPanel({
                   </div>
                 </div>
 
-                {/* Artist */}
-                {appointment.artist && (
+                {/* Technician */}
+                {getArtistId(appointment.artist) && (
                   <div className="detail-item">
                     <div className="detail-icon lg">
                       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -446,8 +463,8 @@ export const DetailPanel = memo(function DetailPanel({
                       </svg>
                     </div>
                     <div className="detail-item-content">
-                      <p className="detail-item-label xs">Lash Artist</p>
-                      <p className="detail-item-value">{appointment.artist}</p>
+                      <p className="detail-item-label xs">Technician</p>
+                      <p className="detail-item-value">{getArtistDisplayName(appointment.artist, technicians)}</p>
                     </div>
                   </div>
                 )}

@@ -66,13 +66,13 @@ export function getAppointmentClasses(
   isDragging: boolean = false
 ): string {
   const colors = getServiceColors(serviceType);
-  
+
   const classes = ['appointment-block', colors.className];
-  
+
   if (isDragging) {
     classes.push('dragging');
   }
-  
+
   return classes.join(' ');
 }
 
@@ -89,7 +89,7 @@ export function getServiceDisplayName(serviceType: ServiceType): string {
     Volume: 'Volume Lashes',
     Refill: 'Lash Refill',
   };
-  
+
   // Provide fallback if serviceType is invalid or undefined
   return names[serviceType] || serviceType || 'Unknown Service';
 }
@@ -105,7 +105,7 @@ export function getDefaultDuration(serviceType: ServiceType): number {
     Volume: 150,
     Refill: 60,
   };
-  
+
   // Provide fallback if serviceType is invalid or undefined
   return durations[serviceType] || 60;
 }

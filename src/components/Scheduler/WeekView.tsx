@@ -82,7 +82,7 @@ const DayColumn = memo(function DayColumn({
   isInSelectedRange,
 }: DayColumnProps) {
   const isTodayDate = isToday(date);
-  
+
   // Set up droppable zone for this day column
   // This enables cross-day drag-and-drop
   const { setNodeRef, isOver } = useDroppable({
@@ -91,8 +91,8 @@ const DayColumn = memo(function DayColumn({
   });
 
   // Provide a safe ref callback in case DndContext is not available
-  const safeSetNodeRef = setNodeRef || (() => {});
-  
+  const safeSetNodeRef = setNodeRef || (() => { });
+
   // Calculate layouts for this day's appointments
   const layouts = useMemo(() => {
     const dayAppointments = filterAppointmentsByDay(appointments, date);
@@ -116,7 +116,7 @@ const DayColumn = memo(function DayColumn({
   const gridHeight = slots.length * SLOT_HEIGHT;
 
   return (
-    <div 
+    <div
       ref={safeSetNodeRef}
       className={`day-column ${isOver ? 'drag-over' : ''} ${isInSelectedRange ? 'in-selected-range' : ''}`}
     >
@@ -200,7 +200,7 @@ export const WeekView = memo(function WeekView({
       <div className="week-header-bar">
         {/* Time column header spacer */}
         <div className="week-header-spacer" />
-        
+
         {/* Day headers are now inside the columns */}
         <div style={{ flex: 1 }} />
       </div>

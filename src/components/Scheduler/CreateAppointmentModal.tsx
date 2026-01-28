@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import type { ServiceType, NewAppointmentData } from '../../types/scheduler';
+import type { ServiceType, NewAppointmentData, TechnicianServices, Service, Technician } from '../../types/scheduler';
 
 /**
  * CreateAppointmentModal Component
@@ -25,10 +25,17 @@ interface CreateAppointmentModalProps {
   initialStartTime?: Date | null;
   /** Pre-selected end time (from slot click) */
   initialEndTime?: Date | null;
-  /** List of available technicians/artists */
-  technicians?: string[];
-  /** List of available service types */
-  services: string[];
+  /** Pre-selected technician ID (from slot click in day view) */
+  initialTechnicianId?: string | null;
+  /** List of available technicians with id and name */
+  technicians?: Technician[];
+  /** List of available services with id, name, and category */
+  services: Service[];
+  /** 
+   * Map of technician IDs to service IDs they can perform.
+   * When provided, services will be filtered based on the selected technician.
+   */
+  technicianServices?: TechnicianServices;
 }
 
 export const CreateAppointmentModal = memo(function CreateAppointmentModal({
@@ -37,46 +44,85 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
   onCreate,
   initialStartTime,
   initialEndTime,
+  initialTechnicianId,
   technicians = [],
   services,
+  technicianServices,
 }: CreateAppointmentModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
 
-  // Create service options from provided services array
-  const serviceOptions = useMemo(() => {
-    return services.map((service) => {
-      // Format label: capitalize first letter and add "Lashes" if not already present
-      const label = service.charAt(0).toUpperCase() + service.slice(1);
-
-      return {
-        value: service as ServiceType,
-        label,
-      };
-    });
-  }, [services]);
-
   // Form state
   const [clientName, setClientName] = useState('');
+  const [technicianId, setTechnicianId] = useState('');
+
+  // Get available services for the selected technician
+  const availableServices = useMemo(() => {
+    // If technicianServices map is provided and a technician is selected
+    if (technicianServices && technicianId && technicianServices[technicianId]) {
+      // Return only services this technician can perform (filter by service ID)
+      const techServiceIds = technicianServices[technicianId];
+      return services.filter(service => techServiceIds.includes(service.id));
+    }
+    // Otherwise, return all services
+    return services;
+  }, [services, technicianServices, technicianId]);
+
+  // Get the selected technician object for display
+  const selectedTechnician = useMemo(() => {
+    return technicians.find(t => t.id === technicianId);
+  }, [technicians, technicianId]);
+
+  // Group services by category for better organization
+  const servicesByCategory = useMemo(() => {
+    const grouped: Record<string, Service[]> = {};
+    availableServices.forEach((service) => {
+      if (!grouped[service.category]) {
+        grouped[service.category] = [];
+      }
+      grouped[service.category].push(service);
+    });
+    return grouped;
+  }, [availableServices]);
+
+  // Get unique categories in order
+  const categories = useMemo(() => {
+    return Object.keys(servicesByCategory);
+  }, [servicesByCategory]);
+
+  // Service type now stores the service ID
   const [serviceType, setServiceType] = useState<ServiceType>(
-    serviceOptions.length > 0 ? (serviceOptions[0].value as ServiceType) : 'Classic'
+    availableServices.length > 0 ? availableServices[0].id : ''
   );
-  const [artist, setArtist] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
+  const [submitError, setSubmitError] = useState('');
 
-  // Reset form and set initial values when modal opens
+  // Reset form and set initial values when modal opens.
+  // IMPORTANT: Do NOT include availableServices in deps — it depends on technicianId.
+  // Including it would re-run this effect when the user selects a technician and
+  // reset technicianId back to initialTechnicianId, preventing the selection from sticking.
   useEffect(() => {
     if (isOpen) {
       setClientName('');
       setEmail('');
       setPhone('');
       setNotes('');
-      setServiceType(serviceOptions.length > 0 ? (serviceOptions[0].value as ServiceType) : 'Classic');
-      setArtist('');
+      setSubmitError('');
+      // Pre-select technician if provided (from day view slot click)
+      const initialTechId = initialTechnicianId || '';
+      setTechnicianId(initialTechId);
+
+      // Compute initial available services for the pre-selected technician (not state)
+      let initialAvailable = services;
+      if (technicianServices && initialTechId && technicianServices[initialTechId]) {
+        const techServiceIds = technicianServices[initialTechId];
+        initialAvailable = services.filter(service => techServiceIds.includes(service.id));
+      }
+      setServiceType(initialAvailable.length > 0 ? initialAvailable[0].id : '');
 
       if (initialStartTime) {
         // Format date as YYYY-MM-DD for input
@@ -108,7 +154,7 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
         setTime(`${String(nextHour).padStart(2, '0')}:00`);
       }
     }
-  }, [isOpen, initialStartTime, initialEndTime, serviceOptions]);
+  }, [isOpen, initialStartTime, initialEndTime, initialTechnicianId, services, technicianServices]);
 
   // Handle escape key
   useEffect(() => {
@@ -141,27 +187,47 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
     };
   }, [isOpen]);
 
-  // Get duration based on service type
-  const getServiceDuration = useCallback((service: ServiceType): number => {
-    const durations: Record<ServiceType, number> = {
-      Classic: 90,
-      Hybrid: 120,
-      Volume: 150,
-      Refill: 60,
-    };
-    return durations[service] || 90;
-  }, []);
+  // Get duration based on service ID - looks up from service object or uses default
+  const getServiceDuration = useCallback((serviceId: ServiceType): number => {
+    const service = services.find(s => s.id === serviceId);
+    // Use service's duration if defined, otherwise default to 60 minutes
+    return service?.duration ?? 60;
+  }, [services]);
 
   // Update duration when service type changes
   const handleServiceChange = useCallback((newService: ServiceType) => {
     setServiceType(newService);
   }, []);
 
+  // Handle technician change - reset service if not available for new technician
+  const handleTechnicianChange = useCallback((newTechnicianId: string) => {
+    setTechnicianId(newTechnicianId);
+    
+    // Check if current service is available for the new technician
+    if (technicianServices && newTechnicianId && technicianServices[newTechnicianId]) {
+      const techServiceIds = technicianServices[newTechnicianId];
+      if (!techServiceIds.includes(serviceType)) {
+        // Current service not available, reset to first available
+        // Find a service that's both in techServiceIds and main services list
+        const firstAvailable = services.find(s => techServiceIds.includes(s.id));
+        if (firstAvailable) {
+          setServiceType(firstAvailable.id);
+        }
+      }
+    }
+  }, [technicianServices, serviceType, services]);
+
   // Handle form submission
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError('');
 
     if (!clientName.trim() || !date || !time || !email.trim()) {
+      return;
+    }
+
+    if (!serviceType) {
+      setSubmitError('Please select a service.');
       return;
     }
 
@@ -179,14 +245,14 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
       startTime,
       duration,
       email: email.trim(),
-      ...(artist && { artist }),
+      ...(technicianId && { artist: technicianId }),
       ...(phone.trim() && { phone: phone.trim() }),
       ...(notes.trim() && { notes: notes.trim() }),
     };
 
     onCreate(appointmentData);
     onClose();
-  }, [clientName, serviceType, artist, date, time, email, phone, notes, getServiceDuration, onCreate, onClose]);
+  }, [clientName, serviceType, technicianId, date, time, email, phone, notes, getServiceDuration, onCreate, onClose]);
 
   if (!isOpen) {
     return null;
@@ -236,26 +302,56 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
             />
           </div>
 
+          {/* Technician - placed before Service Type so filtering works logically */}
+          <div className="form-group">
+            <label htmlFor="technician" className="form-label">Technician</label>
+            <select
+              id="technician"
+              value={technicianId}
+              onChange={(e) => handleTechnicianChange(e.target.value)}
+              className="form-select"
+            >
+              <option value="">Select a technician (optional)</option>
+              {technicians.map((tech) => (
+                <option key={tech.id} value={tech.id}>{tech.name}</option>
+              ))}
+            </select>
+          </div>
+
           {/* Service Type */}
           <div className="form-group">
             <label htmlFor="serviceType" className="form-label">
-              Service Type <span className="required">*</span>
+              Service <span className="required">*</span>
+              {/* Show helper text when services are filtered by technician */}
+              {technicianServices && technicianId && technicianServices[technicianId] && selectedTechnician && (
+                <span className="form-helper-text" style={{ marginLeft: '0.5rem', marginTop: 0 }}>
+                  ({availableServices.length} available for {selectedTechnician.name})
+                </span>
+              )}
             </label>
-            <div className="service-selector">
-              {serviceOptions.map((service) => {
-                // Try to get colors for valid ServiceType, otherwise use default
-                const isSelected = serviceType === service.value;
-                return (
-                  <button
-                    key={service.value}
-                    type="button"
-                    onClick={() => handleServiceChange(service.value)}
-                    className={`service-option ${isSelected ? 'selected ' : ''}`}
-                  >
-                    <span className="service-option-label">{service.label}</span>                  </button>
-                );
-              })}
-            </div>
+            {/* Services grouped by category */}
+            {categories.map((category) => (
+              <div key={category} className="service-category">
+                <span className="service-category-label">
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </span>
+                <div className="service-selector">
+                  {servicesByCategory[category].map((service) => {
+                    const isSelected = serviceType === service.id;
+                    return (
+                      <button
+                        key={service.id}
+                        type="button"
+                        onClick={() => handleServiceChange(service.id)}
+                        className={`service-option ${isSelected ? 'selected ' : ''}`}
+                      >
+                        <span className="service-option-label">{service.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Date and Time */}
@@ -319,22 +415,6 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
             />
           </div>
 
-          {/* Artist */}
-          <div className="form-group">
-            <label htmlFor="artist" className="form-label">Lash Artist</label>
-            <select
-              id="artist"
-              value={artist}
-              onChange={(e) => setArtist(e.target.value)}
-              className="form-select"
-            >
-              <option value="">Select an artist (optional)</option>
-              {technicians.map((name) => (
-                <option key={name} value={name}>{name}</option>
-              ))}
-            </select>
-          </div>
-
           {/* Notes */}
           <div className="form-group">
             <label htmlFor="notes" className="form-label">Notes</label>
@@ -349,6 +429,11 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
           </div>
 
           {/* Actions */}
+          {submitError && (
+            <p className="form-error" role="alert" style={{ marginBottom: '0.75rem', color: 'var(--color-rose-600, #e11d48)' }}>
+              {submitError}
+            </p>
+          )}
           <div className="btn-group">
             <button type="button" onClick={onClose} className="btn btn-outline">
               Cancel

@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import type { Appointment, ServiceType } from '../../types/scheduler';
-import { getServiceDisplayName } from '../../utils/colorUtils';
+import type { Appointment, ServiceType, Service, Technician } from '../../types/scheduler';
+import { getArtistId, getArtistDisplayName } from '../../utils/artistUtils';
 import { formatFullDate } from '../../utils/timeUtils';
 
 /**
@@ -28,11 +28,11 @@ interface DetailModalProps {
   onUpdate?: (appointment: Appointment) => void;
   /** Callback when appointment is deleted */
   onDelete?: (id: string) => void;
-  /** List of available service types */
-  services: string[];
+  /** List of available services with id, name, and category */
+  services: Service[];
+  /** List of available technicians with id and name */
+  technicians?: Technician[];
 }
-
-const ARTIST_OPTIONS = ['Emma Wilson', 'Sofia Chen', 'Maya Rodriguez'];
 
 export const DetailModal = memo(function DetailModal({
   appointment,
@@ -41,22 +41,28 @@ export const DetailModal = memo(function DetailModal({
   onUpdate,
   onDelete,
   services,
+  technicians = [],
 }: DetailModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Create service options from provided services array
-  const serviceOptions = useMemo(() => {
-    return services.map((service) => {
-      // Format label: capitalize first letter and add "Lashes" if not already present
-      const label = service.charAt(0).toUpperCase() + service.slice(1);
-
-      return {
-        value: service as ServiceType,
-        label,
-      };
+  // Group services by category for the edit dropdown
+  const servicesByCategory = useMemo(() => {
+    const grouped: Record<string, Service[]> = {};
+    services.forEach((service) => {
+      if (!grouped[service.category]) {
+        grouped[service.category] = [];
+      }
+      grouped[service.category].push(service);
     });
+    return grouped;
+  }, [services]);
+
+  // Helper to get service name by ID
+  const getServiceName = useCallback((serviceId: string): string => {
+    const service = services.find(s => s.id === serviceId);
+    return service?.name ?? serviceId;
   }, [services]);
 
   // Form state for editing
@@ -72,7 +78,7 @@ export const DetailModal = memo(function DetailModal({
     if (appointment && isEditing) {
       setClientName(appointment.clientName);
       setServiceType(appointment.serviceType);
-      setArtist(appointment.artist || '');
+      setArtist(getArtistId(appointment.artist) || '');
       setNotes(appointment.notes || '');
 
       // Format date as YYYY-MM-DD for input
@@ -224,32 +230,39 @@ export const DetailModal = memo(function DetailModal({
                   value={clientName}
                   disabled
                   className="form-input"
-                  style={{ backgroundColor: '#f3f4f6', color: '#6b7280', cursor: 'not-allowed' }}
                 />
               </div>
 
               {/* Service Type */}
               <div className="form-group">
                 <label className="form-label">
-                  Service Type <span className="required">*</span>
+                  Service <span className="required">*</span>
                 </label>
-                <div className="service-selector">
-                  {serviceOptions.map((service) => {
-                    const isSelected = serviceType === service.value;
-                    return (
-                      <button
-                        key={service.value}
-                        type="button"
-                        onClick={() => {
-                          setServiceType(service.value);
-                        }}
-                        className={`service-option ${isSelected ? 'selected ' : ''}`}
-                      >
-                        <span className="service-option-label">{service.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                {/* Services grouped by category */}
+                {Object.keys(servicesByCategory).map((category) => (
+                  <div key={category} className="service-category">
+                    <span className="service-category-label">
+                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                    </span>
+                    <div className="service-selector">
+                      {servicesByCategory[category].map((service) => {
+                        const isSelected = serviceType === service.id;
+                        return (
+                          <button
+                            key={service.id}
+                            type="button"
+                            onClick={() => {
+                              setServiceType(service.id);
+                            }}
+                            className={`service-option ${isSelected ? 'selected ' : ''}`}
+                          >
+                            <span className="service-option-label">{service.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Date and Time */}
@@ -284,18 +297,18 @@ export const DetailModal = memo(function DetailModal({
                 </div>
               </div>
 
-              {/* Artist */}
+              {/* Technician */}
               <div className="form-group">
-                <label htmlFor="edit-artist" className="form-label">Lash Artist</label>
+                <label htmlFor="edit-technician" className="form-label">Technician</label>
                 <select
-                  id="edit-artist"
+                  id="edit-technician"
                   value={artist}
                   onChange={(e) => setArtist(e.target.value)}
                   className="form-select"
                 >
-                  <option value="">Select an artist (optional)</option>
-                  {ARTIST_OPTIONS.map((name) => (
-                    <option key={name} value={name}>{name}</option>
+                  <option value="">Select a technician (optional)</option>
+                  {technicians.map((tech) => (
+                    <option key={tech.id} value={tech.id}>{tech.name}</option>
                   ))}
                 </select>
               </div>
@@ -350,7 +363,7 @@ export const DetailModal = memo(function DetailModal({
             {/* Service badge */}
             <div className={`service-badge`}>
               <span className="service-badge-dot" />
-              <span className="service-badge-text">{getServiceDisplayName(appointment.serviceType)}</span>
+              <span className="service-badge-text">{getServiceName(appointment.serviceType)}</span>
             </div>
 
             {/* Client name */}
@@ -380,8 +393,8 @@ export const DetailModal = memo(function DetailModal({
                 </div>
               </div>
 
-              {/* Artist (if assigned) */}
-              {appointment.artist && (
+              {/* Technician (if assigned) */}
+              {getArtistId(appointment.artist) && (
                 <div className="detail-item">
                   <div className="detail-icon">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -389,8 +402,8 @@ export const DetailModal = memo(function DetailModal({
                     </svg>
                   </div>
                   <div>
-                    <p className="detail-item-label">Lash Artist</p>
-                    <p className="detail-item-value">{appointment.artist}</p>
+                    <p className="detail-item-label">Technician</p>
+                    <p className="detail-item-value">{getArtistDisplayName(appointment.artist, technicians)}</p>
                   </div>
                 </div>
               )}

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import type { SchedulerProps, Appointment, ViewMode, NewAppointmentData } from '../../types/scheduler';
+import type { SchedulerProps, Appointment, ViewMode, NewAppointmentData, Technician, Service } from '../../types/scheduler';
+import { getArtistId } from '../../utils/artistUtils';
 import { useScheduler } from '../../hooks/useScheduler';
 import { useDragDrop } from '../../hooks/useDragDrop';
 import { formatShortDate } from '../../utils/timeUtils';
@@ -46,6 +47,7 @@ export function Scheduler({
     appointments,
     technicians: providedTechnicians,
     services,
+    technicianServices,
     startHour = 8,
     endHour = 21,
     view: initialView = 'week',
@@ -58,20 +60,54 @@ export function Scheduler({
     onDeleteAppointment,
     onRescheduleAppointment,
 }: SchedulerProps) {
-    // Extract unique technicians from appointments if not provided
-    const technicians = useMemo(() => {
+    // Normalize appointments: ensure startTime is Date (API often sends ISO strings).
+    const appointmentsNormalized: Appointment[] = useMemo(() => {
+        return appointments.map((apt) => ({
+            ...apt,
+            startTime: apt.startTime instanceof Date ? apt.startTime : new Date(apt.startTime as string),
+        }));
+    }, [appointments]);
+
+    // Extract unique technicians from appointments if not provided.
+    // Normalize: support both Technician[] and string[] (strings become { id, name }).
+    // Support artist as string or { id, name }.
+    const technicians: Technician[] = useMemo(() => {
         if (providedTechnicians && providedTechnicians.length > 0) {
-            return providedTechnicians;
+            return providedTechnicians.map((t): Technician =>
+                typeof t === 'string' ? { id: t, name: t } : t
+            );
         }
-        // Extract unique artist names from appointments
-        const artistSet = new Set<string>();
+        const byId = new Map<string, string>();
         appointments.forEach((apt) => {
-            if (apt.artist) {
-                artistSet.add(apt.artist);
+            const id = getArtistId(apt.artist);
+            if (id) {
+                const name =
+                    typeof apt.artist === 'object' && apt.artist != null
+                        ? apt.artist.name ?? apt.artist.id
+                        : id;
+                if (!byId.has(id)) byId.set(id, name);
             }
         });
-        return Array.from(artistSet).sort();
+        return Array.from(byId.entries())
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([id, name]) => ({ id, name }));
     }, [providedTechnicians, appointments]);
+
+    // Normalize services: support both Service[] and string[] (strings become { id, name, category }).
+    // CreateAppointmentModal expects Service[] with id, name, category for the service selector.
+    const normalizedServices: Service[] = useMemo(() => {
+        if (!services?.length) return [];
+        const first = services[0];
+        if (typeof first === 'string') {
+            return (services as string[]).map((s) => ({
+                id: s,
+                name: s,
+                category: 'general',
+            }));
+        }
+        return services as Service[];
+    }, [services]);
+
     // Main scheduler state
     const {
         view,
@@ -108,6 +144,7 @@ export function Scheduler({
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [createModalStartTime, setCreateModalStartTime] = useState<Date | null>(null);
     const [createModalEndTime, setCreateModalEndTime] = useState<Date | null>(null);
+    const [createModalTechnicianId, setCreateModalTechnicianId] = useState<string | null>(null);
 
     // Configure pointer sensor with activation constraint
     // Prevents accidental drags from clicks
@@ -130,11 +167,12 @@ export function Scheduler({
         [selectAppointment, onSelectAppointment]
     );
 
-    // Handle slot click - opens create modal with pre-filled time
+    // Handle slot click - opens create modal with pre-filled time and technician
     const handleSlotClick = useCallback(
-        (startTime: Date, endTime: Date) => {
+        (startTime: Date, endTime: Date, technicianId?: string) => {
             setCreateModalStartTime(startTime);
             setCreateModalEndTime(endTime);
+            setCreateModalTechnicianId(technicianId || null);
             setIsCreateModalOpen(true);
         },
         []
@@ -144,6 +182,7 @@ export function Scheduler({
     const handleCreateNewClick = useCallback(() => {
         setCreateModalStartTime(null);
         setCreateModalEndTime(null);
+        setCreateModalTechnicianId(null);
         setIsCreateModalOpen(true);
     }, []);
 
@@ -169,6 +208,7 @@ export function Scheduler({
         setIsCreateModalOpen(false);
         setCreateModalStartTime(null);
         setCreateModalEndTime(null);
+        setCreateModalTechnicianId(null);
     }, []);
 
     // Handle view change
@@ -206,8 +246,8 @@ export function Scheduler({
 
     // Find the appointment being dragged for the overlay
     const draggingAppointment = useMemo(
-        () => appointments.find((apt) => apt.id === draggingId),
-        [appointments, draggingId]
+        () => appointmentsNormalized.find((apt) => apt.id === draggingId),
+        [appointmentsNormalized, draggingId]
     );
 
     // Get navigation label based on view
@@ -318,7 +358,7 @@ export function Scheduler({
                     {view === 'day' ? (
                         <DayView
                             date={selectedDate}
-                            appointments={appointments}
+                            appointments={appointmentsNormalized}
                             technicians={technicians}
                             startHour={startHour}
                             endHour={endHour}
@@ -330,7 +370,7 @@ export function Scheduler({
                     ) : (
                         <WeekView
                             selectedDate={selectedDate}
-                            appointments={appointments}
+                            appointments={appointmentsNormalized}
                             startHour={startHour}
                             endHour={endHour}
                             onAppointmentClick={handleAppointmentClick}
@@ -367,7 +407,8 @@ export function Scheduler({
                         onClose={closeDetail}
                         onUpdate={onUpdateAppointment}
                         onDelete={onDeleteAppointment}
-                        services={services}
+                        services={normalizedServices}
+                        technicians={technicians}
                     />
                 ) : (
                     <DetailPanel
@@ -376,7 +417,8 @@ export function Scheduler({
                         onClose={closeDetail}
                         onUpdate={onUpdateAppointment}
                         onDelete={onDeleteAppointment}
-                        services={services}
+                        services={normalizedServices}
+                        technicians={technicians}
                     />
                 )}
 
@@ -387,8 +429,10 @@ export function Scheduler({
                     onCreate={handleCreateAppointment}
                     initialStartTime={createModalStartTime}
                     initialEndTime={createModalEndTime}
+                    initialTechnicianId={createModalTechnicianId}
                     technicians={technicians}
-                    services={services}
+                    services={normalizedServices}
+                    technicianServices={technicianServices}
                 />
 
                 {/* Date picker modal */}

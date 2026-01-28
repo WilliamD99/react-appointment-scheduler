@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import type { Appointment, AppointmentLayout } from '../../types/scheduler';
 import { getServiceColors, getServiceDisplayName } from '../../utils/colorUtils';
+import { getArtistDisplayName } from '../../utils/artistUtils';
 import { formatTime, addMinutes } from '../../utils/timeUtils';
 
 /**
@@ -39,7 +40,7 @@ export const AppointmentBlock = memo(function AppointmentBlock({
 }: AppointmentBlockProps) {
   const { appointment, lane, totalLanes, top, height } = layout;
   const colors = getServiceColors(appointment.serviceType);
-  
+
   // Set up draggable behavior with @dnd-kit
   const {
     attributes,
@@ -53,11 +54,11 @@ export const AppointmentBlock = memo(function AppointmentBlock({
   });
 
   // Provide a safe ref callback in case DndContext is not available
-  const safeSetNodeRef = setNodeRef || (() => {});
+  const safeSetNodeRef = setNodeRef || (() => { });
 
   // Calculate end time for display
   const endTime = addMinutes(appointment.startTime, appointment.duration);
-  
+
   // Calculate horizontal position and width based on lane assignment
   // Adds small gaps between overlapping appointments for visual clarity
   const gapSize = 2; // pixels between lanes
@@ -133,9 +134,9 @@ export const AppointmentBlock = memo(function AppointmentBlock({
             <p className="appointment-time">
               {formatTime(appointment.startTime)} – {formatTime(endTime)}
             </p>
-            {appointment.artist && (
+            {getArtistDisplayName(appointment.artist) && (
               <p className="appointment-artist">
-                {appointment.artist}
+                {getArtistDisplayName(appointment.artist)}
               </p>
             )}
           </div>

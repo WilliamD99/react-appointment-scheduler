@@ -2,14 +2,75 @@
  * Core types for the Lash Studio Scheduler component
  */
 
-/** Available lash service types */
+/** Available lash service types (stores service ID) */
 export type ServiceType = string;
+
+/**
+ * Represents a service that can be booked.
+ * 
+ * @example
+ * ```ts
+ * const services: Service[] = [
+ *   { id: '1', name: 'Classic Lashes', category: 'lashes' },
+ *   { id: '2', name: 'Regular Pedicure', category: 'nails' },
+ *   { id: '3', name: 'Volume Lashes', category: 'lashes' },
+ * ];
+ * ```
+ */
+export interface Service {
+  /** Unique identifier for the service */
+  id: string;
+  /** Display name of the service */
+  name: string;
+  /** Category for grouping services (e.g., 'lashes', 'nails', 'facial') */
+  category: string;
+  /** Optional duration in minutes for this service */
+  duration?: number;
+}
+
+/**
+ * Represents a technician/artist who can perform services.
+ * 
+ * @example
+ * ```ts
+ * const technicians: Technician[] = [
+ *   { id: 'tech-1', name: 'Sarah Wilson' },
+ *   { id: 'tech-2', name: 'Emily Chen' },
+ *   { id: 'tech-3', name: 'Jessica Rodriguez' },
+ * ];
+ * ```
+ */
+export interface Technician {
+  /** Unique identifier for the technician */
+  id: string;
+  /** Display name of the technician */
+  name: string;
+}
+
+/**
+ * Map of technician IDs to the service IDs they can perform.
+ * This allows parent applications to define which technicians are qualified
+ * for which services.
+ * 
+ * @example
+ * ```ts
+ * const technicianServices: TechnicianServices = {
+ *   'tech-1': ['1', '2', '3'],  // Technician tech-1 can do services with these IDs
+ *   'tech-2': ['1', '4'],       // Technician tech-2 can only do services 1 and 4
+ *   'tech-3': ['3', '5'],       // Technician tech-3 specializes in services 3 and 5
+ * };
+ * ```
+ */
+export type TechnicianServices = Record<string, string[]>;
 
 /** View modes for the scheduler */
 export type ViewMode = 'day' | 'week';
 
 /** Detail display modes */
 export type DetailDisplayMode = 'modal' | 'panel';
+
+/** Artist can be a string id or an object with id and optional name (e.g. from APIs) */
+export type Artist = string | { id: string; name?: string };
 
 /**
  * Represents a single appointment in the scheduler
@@ -21,8 +82,8 @@ export interface Appointment {
   clientName: string;
   /** Type of lash service being performed */
   serviceType: ServiceType;
-  /** Name of the lash artist (optional for multi-artist support) */
-  artist?: string;
+  /** Lash artist: string id or object { id, name } (objects supported when data comes from APIs) */
+  artist?: Artist;
   /** Start time of the appointment */
   startTime: Date;
   /** Duration of the appointment in minutes */
@@ -55,10 +116,17 @@ export interface NewAppointmentData {
 export interface SchedulerProps {
   /** Array of appointments to display */
   appointments: Appointment[];
-  /** List of technician/artist names for day view columns */
-  technicians?: string[];
-  /** List of available service types */
-  services: string[];
+  /** List of technicians/artists with id and name */
+  technicians?: Technician[];
+  /** List of available services (Service[] or string[]; strings are normalized to { id, name, category: 'general' }) */
+  services: Service[] | string[];
+  /** 
+   * Map of technician IDs to service IDs they can perform.
+   * When provided, the Create Appointment modal will filter available
+   * services based on the selected technician.
+   * If a technician is not in the map, all services will be shown.
+   */
+  technicianServices?: TechnicianServices;
   /** Starting hour of the work day (default: 8 for 8 AM) */
   startHour?: number;
   /** Ending hour of the work day (default: 21 for 9 PM) */

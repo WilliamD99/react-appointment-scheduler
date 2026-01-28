@@ -1,6 +1,7 @@
 import { memo, useMemo, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import type { Appointment, TimeSlot } from '../../types/scheduler';
+import type { Appointment, TimeSlot, Technician } from '../../types/scheduler';
+import { getArtistId } from '../../utils/artistUtils';
 import {
   formatFullDate,
   isToday,
@@ -32,16 +33,16 @@ interface DayViewProps {
   date: Date;
   /** All appointments (will be filtered to this day) */
   appointments: Appointment[];
-  /** List of technician names for columns */
-  technicians: string[];
+  /** List of technicians with id and name for columns */
+  technicians: Technician[];
   /** Starting hour of the work day */
   startHour: number;
   /** Ending hour of the work day */
   endHour: number;
   /** Callback when an appointment is clicked */
   onAppointmentClick?: (appointment: Appointment) => void;
-  /** Callback when an empty slot is clicked */
-  onSlotClick?: (startTime: Date, endTime: Date, technician?: string) => void;
+  /** Callback when an empty slot is clicked (technicianId is passed) */
+  onSlotClick?: (startTime: Date, endTime: Date, technicianId?: string) => void;
   /** Currently selected appointment ID */
   selectedAppointmentId?: string | null;
   /** ID of appointment being dragged */
@@ -53,13 +54,13 @@ interface DayViewProps {
  */
 interface TechnicianColumnProps {
   date: Date;
-  technician: string;
+  technician: Technician;
   appointments: Appointment[];
   slots: TimeSlot[];
   startHour: number;
   endHour: number;
   onAppointmentClick?: (appointment: Appointment) => void;
-  onSlotClick?: (startTime: Date, endTime: Date, technician?: string) => void;
+  onSlotClick?: (startTime: Date, endTime: Date, technicianId?: string) => void;
   selectedAppointmentId?: string | null;
   draggingAppointmentId?: string | null;
 }
@@ -78,17 +79,17 @@ const TechnicianColumn = memo(function TechnicianColumn({
 }: TechnicianColumnProps) {
   // Set up droppable zone for this technician column
   const { setNodeRef, isOver } = useDroppable({
-    id: `tech-${technician}-${date.toISOString()}`,
-    data: { date, technician },
+    id: `tech-${technician.id}-${date.toISOString()}`,
+    data: { date, technicianId: technician.id },
   });
 
   // Provide a safe ref callback in case DndContext is not available
   const safeSetNodeRef = setNodeRef || (() => { });
 
-  // Filter appointments for this technician only
+  // Filter appointments for this technician only (using technician ID)
   const technicianAppointments = useMemo(() => {
-    return appointments.filter((apt) => apt.artist === technician);
-  }, [appointments, technician]);
+    return appointments.filter((apt) => getArtistId(apt.artist) === technician.id);
+  }, [appointments, technician.id]);
 
   // Calculate layouts for this technician's appointments
   const layouts = useMemo(() => {
@@ -103,10 +104,10 @@ const TechnicianColumn = memo(function TechnicianColumn({
         const slotTime = new Date(date);
         slotTime.setHours(slot.hour, slot.minute, 0, 0);
         const endTime = addMinutes(slotTime, SLOT_DURATION);
-        onSlotClick(slotTime, endTime, technician);
+        onSlotClick(slotTime, endTime, technician.id);
       }
     },
-    [date, onSlotClick, technician]
+    [date, onSlotClick, technician.id]
   );
 
   const gridHeight = slots.length * SLOT_HEIGHT;
@@ -116,9 +117,9 @@ const TechnicianColumn = memo(function TechnicianColumn({
       ref={safeSetNodeRef}
       className={`tech-column ${isOver ? 'drag-over' : ''}`}
     >
-      {/* Technician header */}
+      {/* Technician header - display name */}
       <div className={`column-header ${isOver ? 'drag-over' : ''}`}>
-        <span className="tech-header-text">{technician}</span>
+        <span className="tech-header-text">{technician.name}</span>
       </div>
 
       {/* Time grid for this technician */}
@@ -126,12 +127,12 @@ const TechnicianColumn = memo(function TechnicianColumn({
         {/* Slot backgrounds */}
         {slots.map((slot) => (
           <div
-            key={`${technician}-${slot.hour}-${slot.minute}`}
+            key={`${technician.id}-${slot.hour}-${slot.minute}`}
             className={`grid-slot ${slot.isHourStart ? 'hour-start' : ''}`}
             style={{ height: `${SLOT_HEIGHT}px` }}
             onClick={() => handleSlotClick(slot)}
             role="button"
-            aria-label={`Create appointment for ${technician} at ${slot.label}`}
+            aria-label={`Create appointment for ${technician.name} at ${slot.label}`}
           />
         ))}
 
@@ -199,7 +200,7 @@ export const DayView = memo(function DayView({
           <div className="columns-container">
             {technicians.map((technician) => (
               <TechnicianColumn
-                key={technician}
+                key={technician.id}
                 date={date}
                 technician={technician}
                 appointments={appointments}

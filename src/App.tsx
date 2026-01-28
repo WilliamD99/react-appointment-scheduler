@@ -235,6 +235,7 @@ export default function App() {
                 serviceType: appointmentData.serviceType,
                 startTime: appointmentData.startTime,
                 duration: appointmentData.duration,
+                email: appointmentData.email,
                 ...(appointmentData.artist && { artist: appointmentData.artist }),
                 ...(appointmentData.phone && { phone: appointmentData.phone }),
                 ...(appointmentData.notes && { notes: appointmentData.notes }),
