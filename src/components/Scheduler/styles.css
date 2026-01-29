@@ -570,7 +570,6 @@
   font-size: 0.875rem;
   line-height: 1.25;
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
 }
 

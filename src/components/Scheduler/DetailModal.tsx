@@ -391,6 +391,10 @@ export const DetailModal = memo(function DetailModal({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
+                <div>
+                  <p className="detail-item-label">Time</p>
+                  <p className="detail-item-value">{appointment.duration} minutes</p>
+                </div>
               </div>
 
               {/* Technician (if assigned) */}

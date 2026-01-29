@@ -19,7 +19,6 @@ function generateMockAppointments(): Appointment[] {
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
 
     const artists = ['Emma Wilson', 'Sofia Chen', 'Maya Rodriguez'];
-    const services = ['Classic', 'Hybrid', 'Volume', 'Refill'];
 
     const appointments: Appointment[] = [
         // Today's appointments
@@ -32,6 +31,7 @@ function generateMockAppointments(): Appointment[] {
             duration: 150,
             phone: '(555) 123-4567',
             notes: 'First-time client. Prefers dramatic look.',
+            email: 'sarah.johnson@example.com',
         },
         {
             id: '2',
@@ -41,6 +41,7 @@ function generateMockAppointments(): Appointment[] {
             startTime: createDate(today, 9, 30),
             duration: 90,
             phone: '(555) 234-5678',
+            email: 'emily.chen@example.com',
         },
         {
             id: '3',
@@ -50,6 +51,7 @@ function generateMockAppointments(): Appointment[] {
             startTime: createDate(today, 12, 0),
             duration: 120,
             notes: 'Allergic to latex - use latex-free pads.',
+            email: 'rachel.green@example.com',
         },
         {
             id: '4',
@@ -59,6 +61,7 @@ function generateMockAppointments(): Appointment[] {
             startTime: createDate(today, 14, 0),
             duration: 60,
             phone: '(555) 345-6789',
+            email: 'monica.geller@example.com',
         },
         {
             id: '5',
@@ -67,6 +70,7 @@ function generateMockAppointments(): Appointment[] {
             artist: artists[1],
             startTime: createDate(today, 15, 30),
             duration: 150,
+            email: 'phoebe.buffay@example.com',
         },
         // Overlapping appointments to demonstrate layout
         {
@@ -77,6 +81,7 @@ function generateMockAppointments(): Appointment[] {
             startTime: createDate(today, 14, 30),
             duration: 90,
             notes: 'VIP client - offer complimentary champagne.',
+            email: 'jennifer.aniston@example.com',
         },
 
         // Tomorrow's appointments
@@ -87,6 +92,7 @@ function generateMockAppointments(): Appointment[] {
             artist: artists[0],
             startTime: createDate(addDays(today, 1), 10, 0),
             duration: 120,
+            email: 'lisa.kudrow@example.com',
         },
         {
             id: '8',
@@ -96,6 +102,7 @@ function generateMockAppointments(): Appointment[] {
             startTime: createDate(addDays(today, 1), 11, 0),
             duration: 60,
             phone: '(555) 456-7890',
+            email: 'courteney.cox@example.com',
         },
         {
             id: '9',
@@ -105,6 +112,7 @@ function generateMockAppointments(): Appointment[] {
             startTime: createDate(addDays(today, 1), 13, 30),
             duration: 90,
             notes: 'Male client - natural look preferred.',
+            email: 'matt.leblanc@example.com',
         },
         {
             id: '10',
@@ -113,6 +121,7 @@ function generateMockAppointments(): Appointment[] {
             artist: artists[0],
             startTime: createDate(addDays(today, 1), 16, 0),
             duration: 150,
+            email: 'david.schwimmer@example.com',
         },
 
         // Day after tomorrow
@@ -125,6 +134,7 @@ function generateMockAppointments(): Appointment[] {
             duration: 150,
             phone: '(555) 567-8901',
             notes: 'Celebrity client - ensure privacy.',
+            email: 'julia.roberts@example.com',
         },
         {
             id: '12',
@@ -133,6 +143,7 @@ function generateMockAppointments(): Appointment[] {
             artist: artists[2],
             startTime: createDate(addDays(today, 2), 11, 30),
             duration: 120,
+            email: 'sandra.bullock@example.com',
         },
         {
             id: '13',
@@ -141,6 +152,7 @@ function generateMockAppointments(): Appointment[] {
             artist: artists[0],
             startTime: createDate(addDays(today, 2), 14, 0),
             duration: 60,
+            email: 'anne.hathaway@example.com',
         },
 
         // Past appointments (earlier this week if today is not Sunday)
@@ -153,6 +165,7 @@ function generateMockAppointments(): Appointment[] {
                     artist: artists[1],
                     startTime: createDate(weekStart, 10, 0),
                     duration: 90,
+                    email: 'meryl.streep@example.com',
                 },
                 {
                     id: '15',
@@ -162,6 +175,7 @@ function generateMockAppointments(): Appointment[] {
                     startTime: createDate(addDays(weekStart, 1), 13, 0),
                     duration: 150,
                     phone: '(555) 678-9012',
+                    email: 'nicole.kidman@example.com',
                 },
             ]
             : []),
@@ -174,6 +188,7 @@ function generateMockAppointments(): Appointment[] {
             artist: artists[2],
             startTime: createDate(addDays(weekStart, 5), 11, 0),
             duration: 120,
+            email: 'scarlett.johansson@example.com',
         },
         {
             id: '17',
@@ -182,6 +197,7 @@ function generateMockAppointments(): Appointment[] {
             artist: artists[1],
             startTime: createDate(addDays(weekStart, 6), 14, 0),
             duration: 60,
+            email: 'natalie.portman@example.com',
         },
     ];
 
@@ -319,7 +335,7 @@ export default function App() {
                     <div className="scheduler-wrapper">
                         <Scheduler
                             appointments={appointments}
-                            technicians={technicians}
+                            technicians={technicians.map((name) => ({ id: name, name }))}
                             services={services}
                             startHour={8}
                             endHour={21}
