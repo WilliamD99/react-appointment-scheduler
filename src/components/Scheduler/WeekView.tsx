@@ -1,6 +1,6 @@
 import { memo, useMemo, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import type { Appointment, TimeSlot } from '../../types/scheduler';
+import type { Appointment, TimeSlot, Technician } from '../../types/scheduler';
 import {
   getWeekDates,
   formatShortDate,
@@ -15,6 +15,7 @@ import {
   filterAppointmentsByDay,
   filterByWorkingHours,
 } from '../../utils/layoutUtils';
+import { getTechnicianColorForAppointment } from '../../utils/colorUtils';
 import { TimeColumn } from './TimeColumn';
 import { AppointmentBlock } from './AppointmentBlock';
 
@@ -50,6 +51,8 @@ interface WeekViewProps {
   draggingAppointmentId?: string | null;
   /** Selected date range for highlighting (week view) */
   selectedDateRange?: { start: Date; end: Date } | null;
+  /** List of technicians (used to resolve block color per technician) */
+  technicians?: Technician[];
 }
 
 /**
@@ -67,6 +70,7 @@ interface DayColumnProps {
   draggingAppointmentId?: string | null;
   /** Whether this day is within the selected date range */
   isInSelectedRange?: boolean;
+  technicians?: Technician[];
 }
 
 const DayColumn = memo(function DayColumn({
@@ -80,6 +84,7 @@ const DayColumn = memo(function DayColumn({
   selectedAppointmentId,
   draggingAppointmentId,
   isInSelectedRange,
+  technicians = [],
 }: DayColumnProps) {
   const isTodayDate = isToday(date);
 
@@ -93,12 +98,16 @@ const DayColumn = memo(function DayColumn({
   // Provide a safe ref callback in case DndContext is not available
   const safeSetNodeRef = setNodeRef || (() => { });
 
-  // Calculate layouts for this day's appointments
+  // Calculate layouts for this day's appointments; add technician color to each
   const layouts = useMemo(() => {
     const dayAppointments = filterAppointmentsByDay(appointments, date);
     const validAppointments = filterByWorkingHours(dayAppointments, startHour, endHour);
-    return calculateAppointmentLayouts(validAppointments, startHour);
-  }, [appointments, date, startHour, endHour]);
+    const raw = calculateAppointmentLayouts(validAppointments, startHour);
+    return raw.map((layout) => ({
+      ...layout,
+      color: getTechnicianColorForAppointment(layout.appointment, technicians),
+    }));
+  }, [appointments, date, startHour, endHour, technicians]);
 
   const handleSlotClick = useCallback(
     (slot: TimeSlot) => {
@@ -170,6 +179,7 @@ export const WeekView = memo(function WeekView({
   selectedAppointmentId,
   draggingAppointmentId,
   selectedDateRange,
+  technicians = [],
 }: WeekViewProps) {
   // Get all dates for the week
   const weekDates = useMemo(() => getWeekDates(selectedDate), [selectedDate]);
@@ -230,6 +240,7 @@ export const WeekView = memo(function WeekView({
                 selectedAppointmentId={selectedAppointmentId}
                 draggingAppointmentId={draggingAppointmentId}
                 isInSelectedRange={isDateInSelectedRange(date)}
+                technicians={technicians}
               />
             ))}
           </div>

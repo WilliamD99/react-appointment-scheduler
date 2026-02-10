@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import type { Appointment, AppointmentLayout } from '../../types/scheduler';
-import { getServiceColors, getServiceDisplayName } from '../../utils/colorUtils';
+import { getServiceDisplayName, DEFAULT_TECHNICIAN_COLOR } from '../../utils/colorUtils';
 import { getArtistDisplayName } from '../../utils/artistUtils';
 import { formatTime, addMinutes } from '../../utils/timeUtils';
 
@@ -39,7 +39,7 @@ export const AppointmentBlock = memo(function AppointmentBlock({
   isDragging = false,
 }: AppointmentBlockProps) {
   const { appointment, lane, totalLanes, top, height } = layout;
-  const colors = getServiceColors(appointment.serviceType);
+  const blockColor = layout.color ?? DEFAULT_TECHNICIAN_COLOR;
 
   // Set up draggable behavior with @dnd-kit
   const {
@@ -81,6 +81,7 @@ export const AppointmentBlock = memo(function AppointmentBlock({
       ? `translate(${transform.x}px, ${transform.y}px)`
       : undefined,
     pointerEvents: 'auto',
+    ['--block-color' as string]: blockColor,
   };
 
   const handleClick = (e: React.MouseEvent) => {
@@ -91,12 +92,12 @@ export const AppointmentBlock = memo(function AppointmentBlock({
   };
 
   // Determine if we have enough space to show details
-  const isCompact = height < 50;
-  const isVeryCompact = height < 35;
+  // const isCompact = height < 50;
+  // const isVeryCompact = height < 35;
 
   const classNames = [
     'appointment-block',
-    colors.className,
+    'technician-color',
     isCurrentlyDragging ? 'dragging' : '',
     isSelected ? 'selected' : '',
   ].filter(Boolean).join(' ');
@@ -110,37 +111,35 @@ export const AppointmentBlock = memo(function AppointmentBlock({
       {...attributes}
       {...listeners}
       role="button"
-      aria-label={`${appointment.clientName}, ${getServiceDisplayName(appointment.serviceType)} at ${formatTime(appointment.startTime)}`}
+      aria-label={`${appointment.client.name}, ${getServiceDisplayName(appointment.serviceType)} at ${formatTime(appointment.startTime)}`}
     >
       <div className="appointment-content">
         {/* Service type badge */}
         <div className="appointment-badge">
           <span className="appointment-badge-dot" aria-hidden="true" />
-          {!isVeryCompact && (
-            <span className="appointment-badge-text">
-              {appointment.serviceType}
-            </span>
-          )}
+          <span className="appointment-badge-text">
+            {appointment.serviceType}
+          </span>
+
         </div>
 
         {/* Client name */}
         <p className="appointment-client">
-          {appointment.clientName}
+          {appointment.client.name}
         </p>
 
         {/* Time range and artist - only show if enough space */}
-        {!isCompact && (
-          <div className="appointment-details">
-            <p className="appointment-time">
-              {formatTime(appointment.startTime)} – {formatTime(endTime)}
+        <div className="appointment-details">
+          <p className="appointment-time">
+            {formatTime(appointment.startTime)} – {formatTime(endTime)}
+          </p>
+          {getArtistDisplayName(appointment.artist) && (
+            <p className="appointment-artist">
+              {getArtistDisplayName(appointment.artist)}
             </p>
-            {getArtistDisplayName(appointment.artist) && (
-              <p className="appointment-artist">
-                {getArtistDisplayName(appointment.artist)}
-              </p>
-            )}
-          </div>
-        )}
+          )}
+        </div>
+
       </div>
     </div>
   );

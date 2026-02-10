@@ -1,6 +1,7 @@
 import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { Appointment, ServiceType, Service, Technician } from '../../types/scheduler';
 import { getArtistId, getArtistDisplayName } from '../../utils/artistUtils';
+import { getTechnicianColorForAppointment } from '../../utils/colorUtils';
 import { formatFullDate } from '../../utils/timeUtils';
 
 /**
@@ -76,7 +77,7 @@ export const DetailModal = memo(function DetailModal({
   // Initialize form when appointment changes or edit mode is entered
   useEffect(() => {
     if (appointment && isEditing) {
-      setClientName(appointment.clientName);
+      setClientName(appointment.client.name);
       setServiceType(appointment.serviceType);
       setArtist(getArtistId(appointment.artist) || '');
       setNotes(appointment.notes || '');
@@ -150,7 +151,7 @@ export const DetailModal = memo(function DetailModal({
 
     const updatedAppointment: Appointment = {
       id: appointment.id,
-      clientName: appointment.clientName, // Keep original client name
+      client: appointment.client, // Keep original client
       serviceType,
       startTime,
       duration: appointment.duration, // Keep original duration
@@ -196,9 +197,10 @@ export const DetailModal = memo(function DetailModal({
 
       {/* Modal content */}
       <div ref={modalRef} tabIndex={-1} className="modal-content">
-        {/* Colored header strip */}
+        {/* Colored header strip (technician color) */}
         <div
           className="modal-header-strip"
+          style={appointment ? { backgroundColor: getTechnicianColorForAppointment(appointment, technicians) } : undefined}
         />
 
         {/* Close button */}
@@ -367,7 +369,7 @@ export const DetailModal = memo(function DetailModal({
             </div>
 
             {/* Client name */}
-            <h2 id="modal-title" className="detail-client-name">{appointment.clientName}</h2>
+            <h2 id="modal-title" className="detail-client-name">{appointment.client.name}</h2>
 
             {/* Details grid */}
             <div className="detail-list">
@@ -412,6 +414,18 @@ export const DetailModal = memo(function DetailModal({
                 </div>
               )}
 
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="detail-item-label">Customer</p>
+                  <a href={appointment.client.path} target="_blank" className="detail-item-value">{appointment.client.name}</a>
+                </div>
+              </div>
+
               {/* Email */}
               {appointment.email && (
                 <div className="detail-item">
@@ -421,8 +435,8 @@ export const DetailModal = memo(function DetailModal({
                     </svg>
                   </div>
                   <div>
-                    <p className="detail-item-label">Email</p>
-                    <p className="detail-item-value">{appointment.email}</p>
+                    <p className="detail-item-label">Customer Email</p>
+                    <a href={`mailto:${appointment.email}`} className="detail-item-value">{appointment.email}</a>
                   </div>
                 </div>
               )}
@@ -436,8 +450,8 @@ export const DetailModal = memo(function DetailModal({
                     </svg>
                   </div>
                   <div>
-                    <p className="detail-item-label">Phone</p>
-                    <p className="detail-item-value">{appointment.phone}</p>
+                    <p className="detail-item-label">Customer Phone</p>
+                    <a href={`tel:${appointment.phone}`} className="detail-item-value">{appointment.phone}</a>
                   </div>
                 </div>
               )}

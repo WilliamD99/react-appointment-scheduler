@@ -5,7 +5,7 @@ import { getArtistId } from '../../utils/artistUtils';
 import { useScheduler } from '../../hooks/useScheduler';
 import { useDragDrop } from '../../hooks/useDragDrop';
 import { formatShortDate } from '../../utils/timeUtils';
-import { getServiceColors } from '../../utils/colorUtils';
+import { getTechnicianColorForAppointment } from '../../utils/colorUtils';
 import { DayView } from './DayView';
 import { WeekView } from './WeekView';
 import { ViewToggle } from './ViewToggle';
@@ -70,12 +70,18 @@ export function Scheduler({
 
     // Extract unique technicians from appointments if not provided.
     // Normalize: support both Technician[] and string[] (strings become { id, name }).
-    // Support artist as string or { id, name }.
+    // Support artist as string or { id, name }. Accept colorCode (from your app) as well as color.
     const technicians: Technician[] = useMemo(() => {
         if (providedTechnicians && providedTechnicians.length > 0) {
-            return providedTechnicians.map((t): Technician =>
-                typeof t === 'string' ? { id: t, name: t } : t
-            );
+            return providedTechnicians.map((t): Technician => {
+                if (typeof t === 'string') return { id: t, name: t };
+                const raw = t as Technician & { colorCode?: string };
+                return {
+                    id: raw.id,
+                    name: raw.name,
+                    color: raw.color ?? raw.colorCode ?? undefined,
+                };
+            });
         }
         const byId = new Map<string, string>();
         appointments.forEach((apt) => {
@@ -378,6 +384,7 @@ export function Scheduler({
                             selectedAppointmentId={selectedAppointment?.id}
                             draggingAppointmentId={draggingId}
                             selectedDateRange={selectedDateRange}
+                            technicians={technicians}
                         />
                     )}
                 </div>
@@ -386,11 +393,14 @@ export function Scheduler({
                 <DragOverlay>
                     {draggingAppointment && (
                         <div
-                            className={`drag-overlay ${getServiceColors(draggingAppointment.serviceType).className}`}
-                            style={{ width: '150px' }}
+                            className="drag-overlay technician-color"
+                            style={{
+                                width: '150px',
+                                ['--block-color' as string]: getTechnicianColorForAppointment(draggingAppointment, technicians),
+                            }}
                         >
                             <p className="drag-overlay-client">
-                                {draggingAppointment.clientName}
+                                {draggingAppointment.client.name}
                             </p>
                             <p className="drag-overlay-service">
                                 {draggingAppointment.serviceType}

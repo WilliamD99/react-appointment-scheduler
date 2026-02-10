@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { Appointment, ServiceType, Service, Technician } from '../../types/scheduler';
 import { getArtistId, getArtistDisplayName } from '../../utils/artistUtils';
-import { getServiceColors } from '../../utils/colorUtils';
+import { getServiceColors, getTechnicianColorForAppointment } from '../../utils/colorUtils';
 import { formatTime, formatFullDate, addMinutes } from '../../utils/timeUtils';
 
 /**
@@ -185,14 +185,15 @@ export const DetailPanel = memo(function DetailPanel({
   }
 
   const colors = getServiceColors(isEditing ? serviceType : appointment.serviceType);
+  const technicianColor = getTechnicianColorForAppointment(appointment, technicians);
   const endTime = addMinutes(appointment.startTime, appointment.duration);
 
   return (
     <div className={`side-panel ${isOpen ? 'open' : ''}`} role="dialog" aria-modal="true" aria-labelledby="panel-title">
       {/* Panel content */}
       <div ref={panelRef} tabIndex={-1} className="side-panel-content">
-        {/* Colored header strip */}
-        <div className="panel-header-strip" style={{ backgroundColor: colors.badgeColor }} />
+        {/* Colored header strip (technician color) */}
+        <div className="panel-header-strip" style={{ backgroundColor: technicianColor }} />
 
         {/* Header */}
         <div className="panel-header">

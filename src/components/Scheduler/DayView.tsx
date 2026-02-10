@@ -15,6 +15,7 @@ import {
   filterAppointmentsByDay,
   filterByWorkingHours,
 } from '../../utils/layoutUtils';
+import { DEFAULT_TECHNICIAN_COLOR } from '../../utils/colorUtils';
 import { TimeColumn } from './TimeColumn';
 import { AppointmentBlock } from './AppointmentBlock';
 
@@ -91,12 +92,14 @@ const TechnicianColumn = memo(function TechnicianColumn({
     return appointments.filter((apt) => getArtistId(apt.artist) === technician.id);
   }, [appointments, technician.id]);
 
-  // Calculate layouts for this technician's appointments
+  // Calculate layouts for this technician's appointments; add technician color to each
+  const techColor = technician.color ?? DEFAULT_TECHNICIAN_COLOR;
   const layouts = useMemo(() => {
     const dayAppointments = filterAppointmentsByDay(technicianAppointments, date);
     const validAppointments = filterByWorkingHours(dayAppointments, startHour, endHour);
-    return calculateAppointmentLayouts(validAppointments, startHour);
-  }, [technicianAppointments, date, startHour, endHour]);
+    const raw = calculateAppointmentLayouts(validAppointments, startHour);
+    return raw.map((layout) => ({ ...layout, color: techColor }));
+  }, [technicianAppointments, date, startHour, endHour, techColor]);
 
   const handleSlotClick = useCallback(
     (slot: TimeSlot) => {

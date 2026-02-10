@@ -648,6 +648,25 @@
   background-color: var(--scheduler-color-emerald-400);
 }
 
+/* Technician color: block color is set via --block-color (your app provides it per tech) */
+.appointment-block.technician-color {
+  background-color: color-mix(in srgb, var(--block-color) 12%, transparent);
+  border-left-color: var(--block-color);
+  color: var(--scheduler-color-stone-900);
+}
+
+.appointment-block.technician-color:hover {
+  background-color: color-mix(in srgb, var(--block-color) 18%, transparent);
+}
+
+.appointment-block.technician-color .appointment-badge-dot {
+  background-color: var(--block-color);
+}
+
+[data-theme="dark"] .appointment-block.technician-color {
+  color: var(--scheduler-color-stone-100);
+}
+
 /* ============================================
    Drag Overlay
    ============================================ */
@@ -657,6 +676,11 @@
   box-shadow: var(--scheduler-shadow-xl);
   border-left: 4px solid;
   opacity: 0.9;
+}
+
+.drag-overlay.technician-color {
+  background-color: color-mix(in srgb, var(--block-color) 12%, transparent);
+  border-left-color: var(--block-color);
 }
 
 .drag-overlay-client {

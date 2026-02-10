@@ -45,6 +45,8 @@ export interface Technician {
   id: string;
   /** Display name of the technician */
   name: string;
+  /** Optional color (e.g. hex #rrggbb) for this technician; used for blocks and UI. If omitted, a default is used. */
+  color?: string;
 }
 
 /**
@@ -72,6 +74,7 @@ export type DetailDisplayMode = 'modal' | 'panel';
 /** Artist can be a string id or an object with id and optional name (e.g. from APIs) */
 export type Artist = string | { id: string; name?: string };
 
+export type Client = { name: string; path: string }
 /**
  * Represents a single appointment in the scheduler
  */
@@ -79,7 +82,7 @@ export interface Appointment {
   /** Unique identifier for the appointment */
   id: string;
   /** Name of the client */
-  clientName: string;
+  client: Client;
   /** Type of lash service being performed */
   serviceType: ServiceType;
   /** Lash artist: string id or object { id, name } (objects supported when data comes from APIs) */
@@ -100,7 +103,7 @@ export interface Appointment {
  * Data for creating a new appointment (without ID)
  */
 export interface NewAppointmentData {
-  clientName: string;
+  client: Client;
   serviceType: ServiceType;
   artist?: string;
   startTime: Date;
@@ -165,6 +168,8 @@ export interface AppointmentLayout {
   top: number;
   /** Calculated height in pixels */
   height: number;
+  /** Resolved color for this block (from technician or default) */
+  color?: string;
 }
 
 /**

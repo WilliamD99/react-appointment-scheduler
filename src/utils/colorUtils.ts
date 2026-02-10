@@ -1,4 +1,40 @@
-import type { ServiceType } from '../types/scheduler';
+import type { ServiceType, Technician, Appointment } from '../types/scheduler';
+import { getArtistId } from './artistUtils';
+
+/**
+ * Default color used for a technician when the app does not provide one.
+ * Uses a neutral slate that works in light and dark themes.
+ */
+export const DEFAULT_TECHNICIAN_COLOR = '#64748b';
+
+/**
+ * Resolves the color for a technician by ID.
+ * Your app can set technician.color (e.g. hex); if missing, this default is used.
+ *
+ * @param technicianId - Technician/artist ID from the appointment
+ * @param technicians - List of technicians (with optional color)
+ * @returns CSS color string (hex or same as technician.color)
+ */
+export function getTechnicianColor(
+  technicianId: string | undefined,
+  technicians: Technician[]
+): string {
+  if (!technicianId || !technicians?.length) return DEFAULT_TECHNICIAN_COLOR;
+  const tech = technicians.find((t) => t.id === technicianId);
+  if (!tech?.color) return DEFAULT_TECHNICIAN_COLOR;
+  return tech.color;
+}
+
+/**
+ * Resolves the technician color for an appointment (uses appointment.artist).
+ */
+export function getTechnicianColorForAppointment(
+  appointment: Appointment,
+  technicians: Technician[]
+): string {
+  const id = getArtistId(appointment.artist);
+  return getTechnicianColor(id ?? undefined, technicians);
+}
 
 /**
  * Color utility functions for the scheduler
@@ -83,15 +119,9 @@ export function getAppointmentClasses(
  * @returns Formatted service name
  */
 export function getServiceDisplayName(serviceType: ServiceType): string {
-  const names: Record<ServiceType, string> = {
-    Classic: 'Classic Lashes',
-    Hybrid: 'Hybrid Set',
-    Volume: 'Volume Lashes',
-    Refill: 'Lash Refill',
-  };
 
   // Provide fallback if serviceType is invalid or undefined
-  return names[serviceType] || serviceType || 'Unknown Service';
+  return serviceType || 'Unknown Service';
 }
 
 /**
