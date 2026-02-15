@@ -202,7 +202,7 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
   // Handle technician change - reset service if not available for new technician
   const handleTechnicianChange = useCallback((newTechnicianId: string) => {
     setTechnicianId(newTechnicianId);
-    
+
     // Check if current service is available for the new technician
     if (technicianServices && newTechnicianId && technicianServices[newTechnicianId]) {
       const techServiceIds = technicianServices[newTechnicianId];
@@ -240,7 +240,7 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
     const duration = getServiceDuration(serviceType);
 
     const appointmentData: NewAppointmentData = {
-      clientName: clientName.trim(),
+      client: { name: clientName.trim(), path: '' },
       serviceType,
       startTime,
       duration,

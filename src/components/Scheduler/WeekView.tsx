@@ -37,10 +37,12 @@ interface WeekViewProps {
   selectedDate: Date;
   /** All appointments (will be filtered per day) */
   appointments: Appointment[];
-  /** Starting hour of the work day */
+  /** Starting hour of the work day (union range for time column) */
   startHour: number;
-  /** Ending hour of the work day */
+  /** Ending hour of the work day (union range for time column) */
   endHour: number;
+  /** When set, each day column uses this day's open/close; slots outside are disabled */
+  getHoursForDate?: (date: Date) => { startHour: number; endHour: number };
   /** Callback when an appointment is clicked */
   onAppointmentClick?: (appointment: Appointment) => void;
   /** Callback when an empty slot is clicked */
@@ -62,8 +64,12 @@ interface DayColumnProps {
   date: Date;
   appointments: Appointment[];
   slots: TimeSlot[];
+  /** Hour range for the time column (union); slots outside day range are disabled */
   startHour: number;
   endHour: number;
+  /** This day's open/close; when set, slots outside [dayStartHour, dayEndHour) are disabled */
+  dayStartHour?: number;
+  dayEndHour?: number;
   onAppointmentClick?: (appointment: Appointment) => void;
   onSlotClick?: (startTime: Date, endTime: Date) => void;
   selectedAppointmentId?: string | null;
@@ -79,6 +85,8 @@ const DayColumn = memo(function DayColumn({
   slots,
   startHour,
   endHour,
+  dayStartHour,
+  dayEndHour,
   onAppointmentClick,
   onSlotClick,
   selectedAppointmentId,
@@ -87,6 +95,8 @@ const DayColumn = memo(function DayColumn({
   technicians = [],
 }: DayColumnProps) {
   const isTodayDate = isToday(date);
+  const effectiveStart = dayStartHour ?? startHour;
+  const effectiveEnd = dayEndHour ?? endHour;
 
   // Set up droppable zone for this day column
   // This enables cross-day drag-and-drop
@@ -98,28 +108,28 @@ const DayColumn = memo(function DayColumn({
   // Provide a safe ref callback in case DndContext is not available
   const safeSetNodeRef = setNodeRef || (() => { });
 
-  // Calculate layouts for this day's appointments; add technician color to each
+  // Calculate layouts for this day's appointments (position by union grid startHour; filter by this day's hours)
   const layouts = useMemo(() => {
     const dayAppointments = filterAppointmentsByDay(appointments, date);
-    const validAppointments = filterByWorkingHours(dayAppointments, startHour, endHour);
+    const validAppointments = filterByWorkingHours(dayAppointments, effectiveStart, effectiveEnd);
     const raw = calculateAppointmentLayouts(validAppointments, startHour);
     return raw.map((layout) => ({
       ...layout,
       color: getTechnicianColorForAppointment(layout.appointment, technicians),
     }));
-  }, [appointments, date, startHour, endHour, technicians]);
+  }, [appointments, date, startHour, effectiveStart, effectiveEnd, technicians]);
 
   const handleSlotClick = useCallback(
     (slot: TimeSlot) => {
-      if (onSlotClick) {
-        // Create a date for this specific day and time
-        const slotTime = new Date(date);
-        slotTime.setHours(slot.hour, slot.minute, 0, 0);
-        const endTime = addMinutes(slotTime, SLOT_DURATION);
-        onSlotClick(slotTime, endTime);
-      }
+      if (!onSlotClick) return;
+      const inRange = slot.hour >= effectiveStart && slot.hour < effectiveEnd;
+      if (!inRange) return;
+      const slotTime = new Date(date);
+      slotTime.setHours(slot.hour, slot.minute, 0, 0);
+      const endTime = addMinutes(slotTime, SLOT_DURATION);
+      onSlotClick(slotTime, endTime);
     },
-    [date, onSlotClick]
+    [date, onSlotClick, effectiveStart, effectiveEnd]
   );
 
   const gridHeight = slots.length * SLOT_HEIGHT;
@@ -141,16 +151,20 @@ const DayColumn = memo(function DayColumn({
       {/* Day grid */}
       <div className="grid-slots" style={{ height: `${gridHeight}px` }}>
         {/* Slot backgrounds */}
-        {slots.map((slot) => (
-          <div
-            key={`${date.toISOString()}-${slot.hour}-${slot.minute}`}
-            className={`grid-slot ${slot.isHourStart ? 'hour-start' : ''}`}
-            style={{ height: `${SLOT_HEIGHT}px` }}
-            onClick={() => handleSlotClick(slot)}
-            role="button"
-            aria-label={`Create appointment on ${formatShortDate(date)} at ${slot.label}`}
-          />
-        ))}
+        {slots.map((slot) => {
+          const outsideHours = slot.hour < effectiveStart || slot.hour >= effectiveEnd;
+          return (
+            <div
+              key={`${date.toISOString()}-${slot.hour}-${slot.minute}`}
+              className={`grid-slot ${slot.isHourStart ? 'hour-start' : ''} ${outsideHours ? 'slot-outside-hours' : ''}`}
+              style={{ height: `${SLOT_HEIGHT}px` }}
+              onClick={() => handleSlotClick(slot)}
+              role="button"
+              aria-label={outsideHours ? undefined : `Create appointment on ${formatShortDate(date)} at ${slot.label}`}
+              aria-disabled={outsideHours ? true : undefined}
+            />
+          );
+        })}
 
         {/* Appointments */}
         <div className="appointments-layer">
@@ -174,6 +188,7 @@ export const WeekView = memo(function WeekView({
   appointments,
   startHour,
   endHour,
+  getHoursForDate,
   onAppointmentClick,
   onSlotClick,
   selectedAppointmentId,
@@ -184,7 +199,7 @@ export const WeekView = memo(function WeekView({
   // Get all dates for the week
   const weekDates = useMemo(() => getWeekDates(selectedDate), [selectedDate]);
 
-  // Generate time slots once for all columns
+  // Generate time slots once for all columns (union range)
   const slots = useMemo(
     () => generateTimeSlots(selectedDate, startHour, endHour),
     [selectedDate, startHour, endHour]
@@ -227,22 +242,27 @@ export const WeekView = memo(function WeekView({
 
           {/* Day columns */}
           <div className="columns-container">
-            {weekDates.map((date) => (
-              <DayColumn
-                key={date.toISOString()}
-                date={date}
-                appointments={appointments}
-                slots={slots}
-                startHour={startHour}
-                endHour={endHour}
-                onAppointmentClick={onAppointmentClick}
-                onSlotClick={onSlotClick}
-                selectedAppointmentId={selectedAppointmentId}
-                draggingAppointmentId={draggingAppointmentId}
-                isInSelectedRange={isDateInSelectedRange(date)}
-                technicians={technicians}
-              />
-            ))}
+            {weekDates.map((date) => {
+              const dayHours = getHoursForDate?.(date);
+              return (
+                <DayColumn
+                  key={date.toISOString()}
+                  date={date}
+                  appointments={appointments}
+                  slots={slots}
+                  startHour={startHour}
+                  endHour={endHour}
+                  dayStartHour={dayHours?.startHour}
+                  dayEndHour={dayHours?.endHour}
+                  onAppointmentClick={onAppointmentClick}
+                  onSlotClick={onSlotClick}
+                  selectedAppointmentId={selectedAppointmentId}
+                  draggingAppointmentId={draggingAppointmentId}
+                  isInSelectedRange={isDateInSelectedRange(date)}
+                  technicians={technicians}
+                />
+              );
+            })}
           </div>
         </div>
       </div>

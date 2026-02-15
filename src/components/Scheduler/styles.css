@@ -497,6 +497,16 @@
   background-color: var(--scheduler-bg-hover);
 }
 
+.grid-slot.slot-outside-hours {
+  background-color: var(--scheduler-color-stone-100);
+  cursor: default;
+  pointer-events: none;
+}
+
+[data-theme="dark"] .grid-slot.slot-outside-hours {
+  background-color: var(--scheduler-color-stone-800);
+}
+
 .appointments-layer {
   position: absolute;
   inset: 0;

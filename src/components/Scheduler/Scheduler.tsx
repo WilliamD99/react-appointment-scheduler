@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useState } from 'react';
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type { SchedulerProps, Appointment, ViewMode, NewAppointmentData, Technician, Service } from '../../types/scheduler';
+import { formatShortDate, getWeekDates } from '../../utils/timeUtils';
 import { getArtistId } from '../../utils/artistUtils';
 import { useScheduler } from '../../hooks/useScheduler';
 import { useDragDrop } from '../../hooks/useDragDrop';
-import { formatShortDate } from '../../utils/timeUtils';
 import { getTechnicianColorForAppointment } from '../../utils/colorUtils';
 import { DayView } from './DayView';
 import { WeekView } from './WeekView';
@@ -43,6 +43,8 @@ import { DatePickerModal } from './DatePickerModal';
  * />
  * ```
  */
+const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+
 export function Scheduler({
     appointments,
     technicians: providedTechnicians,
@@ -50,6 +52,7 @@ export function Scheduler({
     technicianServices,
     startHour = 8,
     endHour = 21,
+    businessHours,
     view: initialView = 'week',
     selectedDate: initialDate,
     detailDisplay = 'modal',
@@ -60,6 +63,31 @@ export function Scheduler({
     onDeleteAppointment,
     onRescheduleAppointment,
 }: SchedulerProps) {
+    // Per-day schedule: map day name -> { startHour, endHour } (parsed from businessHours)
+    const scheduleByDay = useMemo(() => {
+        if (!businessHours?.length) return null;
+        const map = new Map<string, { startHour: number; endHour: number }>();
+        for (const row of businessHours) {
+            const day = row.day.toLowerCase();
+            const start = parseInt(row.open, 10);
+            const end = parseInt(row.close, 10);
+            if (!Number.isNaN(start) && !Number.isNaN(end)) {
+                map.set(day, { startHour: start, endHour: end });
+            }
+        }
+        return map;
+    }, [businessHours]);
+
+    const getHoursForDate = useCallback(
+        (date: Date): { startHour: number; endHour: number } => {
+            if (!scheduleByDay) return { startHour, endHour };
+            const dayName = DAY_NAMES[date.getDay()];
+            const hours = scheduleByDay.get(dayName);
+            return hours ?? { startHour, endHour };
+        },
+        [scheduleByDay, startHour, endHour]
+    );
+
     // Normalize appointments: ensure startTime is Date (API often sends ISO strings).
     const appointmentsNormalized: Appointment[] = useMemo(() => {
         return appointments.map((apt) => ({
@@ -133,16 +161,37 @@ export function Scheduler({
         detailDisplay,
     });
 
+    // Effective hours for week view: union of all days' hours so the time column spans all openings
+    const weekViewHours = useMemo(() => {
+        if (!scheduleByDay) return { startHour, endHour };
+        const days = getWeekDates(selectedDate);
+        let minStart = 24;
+        let maxEnd = 0;
+        for (const d of days) {
+            const { startHour: s, endHour: e } = getHoursForDate(d);
+            minStart = Math.min(minStart, s);
+            maxEnd = Math.max(maxEnd, e);
+        }
+        return { startHour: minStart, endHour: maxEnd };
+    }, [scheduleByDay, selectedDate, getHoursForDate, startHour, endHour]);
+
+    // Hours for the currently selected day (day view)
+    const dayViewHours = useMemo(
+        () => getHoursForDate(selectedDate),
+        [getHoursForDate, selectedDate]
+    );
+
     // Date picker modal state
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
     // Selected date range (for week view highlighting)
     const [selectedDateRange, setSelectedDateRange] = useState<{ start: Date; end: Date } | null>(null);
 
-    // Drag and drop handling
+    // Drag and drop handling (use per-day hours when businessHours provided)
     const { draggingId, handleDragStart, handleDragEnd, snapModifier } = useDragDrop({
         startHour,
         endHour,
+        getHoursForDate: scheduleByDay ? getHoursForDate : undefined,
         onReschedule: onRescheduleAppointment,
     });
 
@@ -198,6 +247,7 @@ export function Scheduler({
             // Call the new callback with full data if provided
             // Includes: clientName, serviceType, startTime, duration, email, artist, phone, notes
             if (onNewAppointment) {
+                console.log(appointmentData)
                 onNewAppointment(appointmentData);
             }
             // Also call legacy callback for backward compatibility
@@ -366,8 +416,8 @@ export function Scheduler({
                             date={selectedDate}
                             appointments={appointmentsNormalized}
                             technicians={technicians}
-                            startHour={startHour}
-                            endHour={endHour}
+                            startHour={dayViewHours.startHour}
+                            endHour={dayViewHours.endHour}
                             onAppointmentClick={handleAppointmentClick}
                             onSlotClick={handleSlotClick}
                             selectedAppointmentId={selectedAppointment?.id}
@@ -377,8 +427,9 @@ export function Scheduler({
                         <WeekView
                             selectedDate={selectedDate}
                             appointments={appointmentsNormalized}
-                            startHour={startHour}
-                            endHour={endHour}
+                            startHour={weekViewHours.startHour}
+                            endHour={weekViewHours.endHour}
+                            getHoursForDate={scheduleByDay ? getHoursForDate : undefined}
                             onAppointmentClick={handleAppointmentClick}
                             onSlotClick={handleSlotClick}
                             selectedAppointmentId={selectedAppointment?.id}

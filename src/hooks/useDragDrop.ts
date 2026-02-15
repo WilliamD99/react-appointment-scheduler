@@ -18,6 +18,8 @@ interface UseDragDropOptions {
   startHour: number;
   /** Ending hour of the work day (for bounds checking) */
   endHour: number;
+  /** When set, bounds are taken from this per-day lookup (e.g. from businessHours) */
+  getHoursForDate?: (date: Date) => { startHour: number; endHour: number };
   /** Callback when an appointment is successfully rescheduled */
   onReschedule?: (appointmentId: string, newStartTime: Date) => void;
 }
@@ -36,6 +38,7 @@ interface UseDragDropReturn {
 export function useDragDrop({
   startHour,
   endHour,
+  getHoursForDate,
   onReschedule,
 }: UseDragDropOptions): UseDragDropReturn {
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -109,13 +112,17 @@ export function useDragDrop({
       // Round to nearest slot
       const roundedStartTime = roundToSlot(newStartTime);
 
-      // Validate the new time is within working hours
+      // Validate the new time is within working hours (use per-day hours when available)
+      const dateForHours = targetDate ?? appointment.startTime;
+      const { startHour: boundsStart, endHour: boundsEnd } = getHoursForDate
+        ? getHoursForDate(dateForHours)
+        : { startHour, endHour };
       const newHour = roundedStartTime.getHours();
       const newMinute = roundedStartTime.getMinutes();
       const appointmentEndHour =
         newHour + Math.floor((newMinute + appointment.duration) / 60);
 
-      if (newHour < startHour || appointmentEndHour > endHour) {
+      if (newHour < boundsStart || appointmentEndHour > boundsEnd) {
         // Don't allow dragging outside working hours
         return;
       }
@@ -128,7 +135,7 @@ export function useDragDrop({
       // Call the reschedule callback
       onReschedule(appointment.id, roundedStartTime);
     },
-    [onReschedule, startHour, endHour]
+    [onReschedule, startHour, endHour, getHoursForDate]
   );
 
   /**

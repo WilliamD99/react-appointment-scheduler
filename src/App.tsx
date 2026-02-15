@@ -24,7 +24,7 @@ function generateMockAppointments(): Appointment[] {
         // Today's appointments
         {
             id: '1',
-            clientName: 'Sarah Johnson',
+            client: { name: 'Sarah Johnson', path: '/admin/collections/customers/1' },
             serviceType: 'Volume',
             artist: artists[0],
             startTime: createDate(today, 9, 0),
@@ -35,7 +35,7 @@ function generateMockAppointments(): Appointment[] {
         },
         {
             id: '2',
-            clientName: 'Emily Chen',
+            client: { name: 'Emily Chen', path: '/admin/collections/customers/2' },
             serviceType: 'Classic',
             artist: artists[1],
             startTime: createDate(today, 9, 30),
@@ -45,7 +45,7 @@ function generateMockAppointments(): Appointment[] {
         },
         {
             id: '3',
-            clientName: 'Rachel Green',
+            client: { name: 'Rachel Green', path: '/admin/collections/customers/3' },
             serviceType: 'Hybrid',
             artist: artists[0],
             startTime: createDate(today, 12, 0),
@@ -55,7 +55,7 @@ function generateMockAppointments(): Appointment[] {
         },
         {
             id: '4',
-            clientName: 'Monica Geller',
+            client: { name: 'Monica Geller', path: '/admin/collections/customers/4' },
             serviceType: 'Refill',
             artist: artists[2],
             startTime: createDate(today, 14, 0),
@@ -65,7 +65,7 @@ function generateMockAppointments(): Appointment[] {
         },
         {
             id: '5',
-            clientName: 'Phoebe Buffay',
+            client: { name: 'Phoebe Buffay', path: '/admin/collections/customers/5' },
             serviceType: 'Volume',
             artist: artists[1],
             startTime: createDate(today, 15, 30),
@@ -75,7 +75,7 @@ function generateMockAppointments(): Appointment[] {
         // Overlapping appointments to demonstrate layout
         {
             id: '6',
-            clientName: 'Jennifer Aniston',
+            client: { name: 'Jennifer Aniston', path: '/admin/collections/customers/6' },
             serviceType: 'Classic',
             artist: artists[2],
             startTime: createDate(today, 14, 30),
@@ -87,7 +87,7 @@ function generateMockAppointments(): Appointment[] {
         // Tomorrow's appointments
         {
             id: '7',
-            clientName: 'Lisa Kudrow',
+            client: { name: 'Lisa Kudrow', path: '/admin/collections/customers/7' },
             serviceType: 'Hybrid',
             artist: artists[0],
             startTime: createDate(addDays(today, 1), 10, 0),
@@ -96,7 +96,7 @@ function generateMockAppointments(): Appointment[] {
         },
         {
             id: '8',
-            clientName: 'Courteney Cox',
+            client: { name: 'Courteney Cox', path: '/admin/collections/customers/8' },
             serviceType: 'Refill',
             artist: artists[1],
             startTime: createDate(addDays(today, 1), 11, 0),
@@ -106,7 +106,7 @@ function generateMockAppointments(): Appointment[] {
         },
         {
             id: '9',
-            clientName: 'Matt LeBlanc',
+            client: { name: 'Matt LeBlanc', path: '/admin/collections/customers/9' },
             serviceType: 'Classic',
             artist: artists[2],
             startTime: createDate(addDays(today, 1), 13, 30),
@@ -116,7 +116,7 @@ function generateMockAppointments(): Appointment[] {
         },
         {
             id: '10',
-            clientName: 'David Schwimmer',
+            client: { name: 'David Schwimmer', path: '/admin/collections/customers/10' },
             serviceType: 'Volume',
             artist: artists[0],
             startTime: createDate(addDays(today, 1), 16, 0),
@@ -127,7 +127,7 @@ function generateMockAppointments(): Appointment[] {
         // Day after tomorrow
         {
             id: '11',
-            clientName: 'Julia Roberts',
+            client: { name: 'Julia Roberts', path: '/admin/collections/customers/11' },
             serviceType: 'Volume',
             artist: artists[1],
             startTime: createDate(addDays(today, 2), 9, 0),
@@ -136,31 +136,14 @@ function generateMockAppointments(): Appointment[] {
             notes: 'Celebrity client - ensure privacy.',
             email: 'julia.roberts@example.com',
         },
-        {
-            id: '12',
-            clientName: 'Sandra Bullock',
-            serviceType: 'Hybrid',
-            artist: artists[2],
-            startTime: createDate(addDays(today, 2), 11, 30),
-            duration: 120,
-            email: 'sandra.bullock@example.com',
-        },
-        {
-            id: '13',
-            clientName: 'Anne Hathaway',
-            serviceType: 'Refill',
-            artist: artists[0],
-            startTime: createDate(addDays(today, 2), 14, 0),
-            duration: 60,
-            email: 'anne.hathaway@example.com',
-        },
+
 
         // Past appointments (earlier this week if today is not Sunday)
         ...(today.getDay() > 0
             ? [
                 {
                     id: '14',
-                    clientName: 'Meryl Streep',
+                    client: { name: 'Meryl Streep', path: '/admin/collections/customers/12' },
                     serviceType: 'Classic' as const,
                     artist: artists[1],
                     startTime: createDate(weekStart, 10, 0),
@@ -169,7 +152,7 @@ function generateMockAppointments(): Appointment[] {
                 },
                 {
                     id: '15',
-                    clientName: 'Nicole Kidman',
+                    client: { name: 'Nicole Kidman', path: '/admin/collections/customers/13' },
                     serviceType: 'Volume' as const,
                     artist: artists[0],
                     startTime: createDate(addDays(weekStart, 1), 13, 0),
@@ -180,25 +163,7 @@ function generateMockAppointments(): Appointment[] {
             ]
             : []),
 
-        // Weekend appointments
-        {
-            id: '16',
-            clientName: 'Scarlett Johansson',
-            serviceType: 'Hybrid',
-            artist: artists[2],
-            startTime: createDate(addDays(weekStart, 5), 11, 0),
-            duration: 120,
-            email: 'scarlett.johansson@example.com',
-        },
-        {
-            id: '17',
-            clientName: 'Natalie Portman',
-            serviceType: 'Refill',
-            artist: artists[1],
-            startTime: createDate(addDays(weekStart, 6), 14, 0),
-            duration: 60,
-            email: 'natalie.portman@example.com',
-        },
+
     ];
 
     return appointments;
@@ -247,7 +212,7 @@ export default function App() {
             // Create new appointment with a unique ID
             const newAppointment: Appointment = {
                 id: `new-${Date.now()}`,
-                clientName: appointmentData.clientName,
+                client: appointmentData.client,
                 serviceType: appointmentData.serviceType,
                 startTime: appointmentData.startTime,
                 duration: appointmentData.duration,

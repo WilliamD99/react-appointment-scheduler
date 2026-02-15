@@ -65,6 +65,27 @@ export interface Technician {
  */
 export type TechnicianServices = Record<string, string[]>;
 
+/**
+ * Open/close hours for a single day of the week.
+ * Used when business hours differ by day (e.g. Mon–Fri 10–19, Sat–Sun 11–18).
+ *
+ * @example
+ * ```ts
+ * const businessHours: DaySchedule[] = [
+ *   { day: 'monday', open: '10', close: '19' },
+ *   { day: 'saturday', open: '11', close: '18' },
+ * ];
+ * ```
+ */
+export interface DaySchedule {
+  /** Day name in lowercase: 'sunday' | 'monday' | ... | 'saturday' */
+  day: string;
+  /** Opening hour (0–23) as string, e.g. '10' for 10:00 */
+  open: string;
+  /** Closing hour (0–23) as string, e.g. '19' for 19:00 */
+  close: string;
+}
+
 /** View modes for the scheduler */
 export type ViewMode = 'day' | 'week';
 
@@ -130,10 +151,17 @@ export interface SchedulerProps {
    * If a technician is not in the map, all services will be shown.
    */
   technicianServices?: TechnicianServices;
-  /** Starting hour of the work day (default: 8 for 8 AM) */
+  /** Starting hour of the work day (default: 8 for 8 AM). Ignored when businessHours is provided. */
   startHour?: number;
-  /** Ending hour of the work day (default: 21 for 9 PM) */
+  /** Ending hour of the work day (default: 21 for 9 PM). Ignored when businessHours is provided. */
   endHour?: number;
+  /**
+   * Per-day open/close hours. When provided (non-null, non-undefined, non-empty), the grid
+   * and slots use these hours per day instead of a single startHour/endHour.
+   * When null, undefined, or an empty array, the whole day uses startHour/endHour.
+   * Day names must be lowercase ('monday' … 'sunday').
+   */
+  businessHours?: DaySchedule[] | null;
   /** Current view mode */
   view?: ViewMode;
   /** Currently selected/focused date */
