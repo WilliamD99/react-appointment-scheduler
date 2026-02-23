@@ -226,6 +226,36 @@
   gap: 0.75rem;
 }
 
+.status-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-filter-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--scheduler-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-filter-select {
+  min-width: 140px;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--scheduler-border-secondary);
+  border-radius: var(--scheduler-border-radius-md);
+  background-color: var(--scheduler-bg-primary);
+  color: var(--scheduler-text-secondary);
+  font-size: 0.875rem;
+}
+
+.status-filter-select:focus {
+  outline: none;
+  border-color: var(--scheduler-color-rose-400);
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.2);
+}
+
 .scheduler-create-btn {
   display: inline-flex;
   align-items: center;
@@ -590,6 +620,50 @@
 .appointment-time {
   font-size: 0.75rem;
   opacity: 0.75;
+}
+
+.appointment-status {
+  font-size: 0.75rem;
+  margin-top: 0.125rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+  opacity: 0.9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.appointment-status-pending {
+  color: #9a3412;
+}
+
+.appointment-status-confirmed {
+  color: #166534;
+}
+
+.appointment-status-canceled {
+  color: #b91c1c;
+}
+
+.appointment-status-completed {
+  color: #1d4ed8;
+}
+
+[data-theme="dark"] .appointment-status-pending {
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .appointment-status-confirmed {
+  color: #4ade80;
+}
+
+[data-theme="dark"] .appointment-status-canceled {
+  color: #f87171;
+}
+
+[data-theme="dark"] .appointment-status-completed {
+  color: #60a5fa;
 }
 
 .appointment-artist {
@@ -1029,6 +1103,157 @@
 
 .service-option.selected .service-option-duration {
   opacity: 0.75;
+}
+
+/* Job builder - service + technician selection row */
+.job-builder {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.job-builder-fields {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+}
+
+.job-builder-fields .form-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.job-builder-add-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Jobs list */
+.jobs-list {
+  background: var(--scheduler-bg-secondary);
+  border: 1px solid var(--scheduler-border-primary);
+  border-radius: var(--scheduler-border-radius-xl);
+  padding: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.job-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--scheduler-border-radius-lg);
+  transition: background-color var(--scheduler-transition-fast);
+}
+
+.job-entry:hover {
+  background-color: var(--scheduler-bg-tertiary, rgba(0, 0, 0, 0.03));
+}
+
+[data-theme="dark"] .job-entry:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.job-entry-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: var(--scheduler-color-rose-100);
+  color: var(--scheduler-color-rose-600);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .job-entry-number {
+  background-color: rgba(251, 113, 133, 0.15);
+  color: var(--scheduler-color-rose-400);
+}
+
+.job-entry-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.job-entry-service {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--scheduler-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.job-entry-tech {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--scheduler-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.job-entry-duration {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--scheduler-text-tertiary);
+  background-color: var(--scheduler-bg-primary);
+  border: 1px solid var(--scheduler-border-primary);
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+}
+
+.job-entry-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--scheduler-text-tertiary);
+  cursor: pointer;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background-color var(--scheduler-transition-fast),
+    color var(--scheduler-transition-fast);
+}
+
+.job-entry-remove:hover {
+  background-color: var(--scheduler-color-rose-100);
+  color: var(--scheduler-color-rose-600);
+}
+
+[data-theme="dark"] .job-entry-remove:hover {
+  background-color: rgba(251, 113, 133, 0.15);
+  color: var(--scheduler-color-rose-400);
+}
+
+/* Jobs summary footer */
+.jobs-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.625rem 0.25rem;
+  border-top: 1px solid var(--scheduler-border-primary);
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--scheduler-text-secondary);
+}
+
+.jobs-summary-duration {
+  font-weight: 600;
+  color: var(--scheduler-color-rose-500);
+}
+
+[data-theme="dark"] .jobs-summary-duration {
+  color: var(--scheduler-color-rose-400);
 }
 
 /* ============================================

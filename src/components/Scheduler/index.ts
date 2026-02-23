@@ -26,6 +26,7 @@ export { ThemeToggle } from './ThemeToggle';
 // Re-export types
 export type {
   Appointment,
+  AppointmentStatus,
   SchedulerProps,
   Service,
   ServiceType,
@@ -34,6 +35,7 @@ export type {
   DetailDisplayMode,
   AppointmentLayout,
   TimeSlot,
+  Job,
   NewAppointmentData,
   TechnicianServices,
 } from '../../types/scheduler';

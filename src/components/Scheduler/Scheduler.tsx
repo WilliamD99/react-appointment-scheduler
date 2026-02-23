@@ -1,6 +1,14 @@
 import { useCallback, useMemo, useState } from 'react';
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import type { SchedulerProps, Appointment, ViewMode, NewAppointmentData, Technician, Service } from '../../types/scheduler';
+import type {
+    SchedulerProps,
+    Appointment,
+    ViewMode,
+    NewAppointmentData,
+    Technician,
+    Service,
+    AppointmentStatus,
+} from '../../types/scheduler';
 import { formatShortDate, getWeekDates } from '../../utils/timeUtils';
 import { getArtistId } from '../../utils/artistUtils';
 import { useScheduler } from '../../hooks/useScheduler';
@@ -44,6 +52,7 @@ import { DatePickerModal } from './DatePickerModal';
  * ```
  */
 const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const;
+const STATUS_FILTER_OPTIONS: Array<'all' | AppointmentStatus> = ['all', 'pending', 'confirmed', 'canceled', 'completed'];
 
 export function Scheduler({
     appointments,
@@ -93,6 +102,7 @@ export function Scheduler({
         return appointments.map((apt) => ({
             ...apt,
             startTime: apt.startTime instanceof Date ? apt.startTime : new Date(apt.startTime as string),
+            status: apt.status ?? 'pending',
         }));
     }, [appointments]);
 
@@ -186,6 +196,7 @@ export function Scheduler({
 
     // Selected date range (for week view highlighting)
     const [selectedDateRange, setSelectedDateRange] = useState<{ start: Date; end: Date } | null>(null);
+    const [statusFilter, setStatusFilter] = useState<'all' | AppointmentStatus>('all');
 
     // Drag and drop handling (use per-day hours when businessHours provided)
     const { draggingId, handleDragStart, handleDragEnd, snapModifier } = useDragDrop({
@@ -245,7 +256,7 @@ export function Scheduler({
     const handleCreateAppointment = useCallback(
         (appointmentData: NewAppointmentData) => {
             // Call the new callback with full data if provided
-            // Includes: clientName, serviceType, startTime, duration, email, artist, phone, notes
+            // Includes: clientName, jobs[], startTime, duration, email, artist, phone, notes
             if (onNewAppointment) {
                 console.log(appointmentData)
                 onNewAppointment(appointmentData);
@@ -304,6 +315,13 @@ export function Scheduler({
     const draggingAppointment = useMemo(
         () => appointmentsNormalized.find((apt) => apt.id === draggingId),
         [appointmentsNormalized, draggingId]
+    );
+    const filteredAppointments = useMemo(
+        () =>
+            statusFilter === 'all'
+                ? appointmentsNormalized
+                : appointmentsNormalized.filter((apt) => apt.status === statusFilter),
+        [appointmentsNormalized, statusFilter]
     );
 
     // Get navigation label based on view
@@ -387,6 +405,26 @@ export function Scheduler({
                     <div className="scheduler-controls">
                         <ThemeToggle />
                         <ViewToggle view={view} onViewChange={handleViewChange} />
+                        <div className="status-filter">
+                            <label htmlFor="scheduler-status-filter" className="status-filter-label">
+                                Status
+                            </label>
+                            <select
+                                id="scheduler-status-filter"
+                                className="status-filter-select"
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value as 'all' | AppointmentStatus)}
+                                aria-label="Filter appointments by status"
+                            >
+                                {STATUS_FILTER_OPTIONS.map((option) => (
+                                    <option key={option} value={option}>
+                                        {option === 'all'
+                                            ? 'All Status'
+                                            : option.charAt(0).toUpperCase() + option.slice(1)}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                         <button
                             type="button"
                             onClick={handleCreateNewClick}
@@ -414,7 +452,7 @@ export function Scheduler({
                     {view === 'day' ? (
                         <DayView
                             date={selectedDate}
-                            appointments={appointmentsNormalized}
+                            appointments={filteredAppointments}
                             technicians={technicians}
                             startHour={dayViewHours.startHour}
                             endHour={dayViewHours.endHour}
@@ -426,7 +464,7 @@ export function Scheduler({
                     ) : (
                         <WeekView
                             selectedDate={selectedDate}
-                            appointments={appointmentsNormalized}
+                            appointments={filteredAppointments}
                             startHour={weekViewHours.startHour}
                             endHour={weekViewHours.endHour}
                             getHoursForDate={scheduleByDay ? getHoursForDate : undefined}
@@ -470,6 +508,7 @@ export function Scheduler({
                         onDelete={onDeleteAppointment}
                         services={normalizedServices}
                         technicians={technicians}
+                        technicianServices={technicianServices}
                     />
                 ) : (
                     <DetailPanel
@@ -480,6 +519,7 @@ export function Scheduler({
                         onDelete={onDeleteAppointment}
                         services={normalizedServices}
                         technicians={technicians}
+                        technicianServices={technicianServices}
                     />
                 )}
 

@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import type { Appointment, ServiceType, Service, Technician } from '../../types/scheduler';
+import type { Appointment, Job, Service, ServiceType, Technician, TechnicianServices } from '../../types/scheduler';
 import { getArtistId, getArtistDisplayName } from '../../utils/artistUtils';
-import { getServiceColors, getTechnicianColorForAppointment } from '../../utils/colorUtils';
+import { getTechnicianColorForAppointment } from '../../utils/colorUtils';
 import { formatTime, formatFullDate, addMinutes } from '../../utils/timeUtils';
 
 /**
@@ -33,6 +33,8 @@ interface DetailPanelProps {
   services: Service[];
   /** List of available technicians with id and name */
   technicians?: Technician[];
+  /** Map of technician IDs to service IDs they can perform */
+  technicianServices?: TechnicianServices;
 }
 
 export const DetailPanel = memo(function DetailPanel({
@@ -43,54 +45,84 @@ export const DetailPanel = memo(function DetailPanel({
   onDelete,
   services,
   technicians = [],
+  technicianServices,
 }: DetailPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Group services by category for the edit dropdown
+  // Group services by category for the edit UI
   const servicesByCategory = useMemo(() => {
     const grouped: Record<string, Service[]> = {};
     services.forEach((service) => {
-      if (!grouped[service.category]) {
-        grouped[service.category] = [];
+      const categoryKey =
+        typeof service.category === 'string'
+          ? service.category
+          : (service.category?.name ?? 'Uncategorized');
+      if (!grouped[categoryKey]) {
+        grouped[categoryKey] = [];
       }
-      grouped[service.category].push(service);
+      grouped[categoryKey].push(service);
     });
     return grouped;
   }, [services]);
 
-  // Helper to get service by ID
-  const getServiceById = useCallback((serviceId: string): Service | undefined => {
-    return services.find(s => s.id === serviceId);
-  }, [services]);
-
-  // Helper to get service name by ID
-  const getServiceName = useCallback((serviceId: string): string => {
-    const service = getServiceById(serviceId);
-    return service?.name ?? serviceId;
-  }, [getServiceById]);
-
   // Form state for editing
   const [clientName, setClientName] = useState('');
-  const [serviceType, setServiceType] = useState<ServiceType>('Classic');
-  const [artist, setArtist] = useState('');
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [selectedJobIndex, setSelectedJobIndex] = useState(0);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [duration, setDuration] = useState(90);
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
+
+  const getServiceDuration = useCallback((serviceId: ServiceType): number => {
+    const service = services.find((s) => s.id === serviceId);
+    return service?.duration ?? 0;
+  }, [services]);
+
+  const totalDuration = useMemo(() => {
+    return jobs.reduce((sum, job) => sum + getServiceDuration(job.serviceType), 0);
+  }, [jobs, getServiceDuration]);
+
+  const selectedJob = jobs[selectedJobIndex];
+
+  const techniciansByService = useMemo(() => {
+    if (!technicianServices) return {};
+    const map: Record<string, string[]> = {};
+    for (const [techId, serviceIds] of Object.entries(technicianServices)) {
+      for (const serviceId of serviceIds) {
+        if (!map[serviceId]) map[serviceId] = [];
+        map[serviceId].push(techId);
+      }
+    }
+    return map;
+  }, [technicianServices]);
+
+  const selectedJobAvailableTechnicians = useMemo(() => {
+    if (!selectedJob?.serviceType || !technicianServices) return technicians;
+    const allowedTechIds = techniciansByService[selectedJob.serviceType];
+    if (!allowedTechIds) return technicians;
+    return technicians.filter((tech) => allowedTechIds.includes(tech.id));
+  }, [selectedJob?.serviceType, technicians, technicianServices, techniciansByService]);
+
+  const getEditableJobs = useCallback((apt: Appointment): Job[] => {
+    if (apt.jobs?.length) {
+      return apt.jobs.map((job) => ({ ...job }));
+    }
+    const fallbackJob: Job = {
+      serviceType: apt.serviceType,
+      ...(getArtistId(apt.artist) ? { technicianId: getArtistId(apt.artist) } : {}),
+    };
+    return [fallbackJob];
+  }, []);
 
   // Initialize form when appointment changes or edit mode is entered
   useEffect(() => {
     if (appointment && isEditing) {
-      setClientName(appointment.clientName);
-      setServiceType(appointment.serviceType);
-      setArtist(getArtistId(appointment.artist) || '');
-      setDuration(appointment.duration);
-      setEmail(appointment.email || '');
-      setPhone(appointment.phone || '');
+      setClientName(appointment.client.name);
+      const editableJobs = getEditableJobs(appointment);
+      setJobs(editableJobs);
+      setSelectedJobIndex(0);
       setNotes(appointment.notes || '');
 
       // Format date as YYYY-MM-DD for input
@@ -104,7 +136,7 @@ export const DetailPanel = memo(function DetailPanel({
       const minutes = String(appointment.startTime.getMinutes()).padStart(2, '0');
       setTime(`${hours}:${minutes}`);
     }
-  }, [appointment, isEditing]);
+  }, [appointment, isEditing, getEditableJobs]);
 
   // Reset edit state when panel closes
   useEffect(() => {
@@ -139,7 +171,7 @@ export const DetailPanel = memo(function DetailPanel({
 
   // Handle save
   const handleSave = useCallback(() => {
-    if (!appointment || !clientName.trim() || !date || !time || !email.trim()) {
+    if (!appointment || !date || !time || jobs.length === 0) {
       return;
     }
 
@@ -148,15 +180,18 @@ export const DetailPanel = memo(function DetailPanel({
     const [hours, minutes] = time.split(':').map(Number);
     const startTime = new Date(year, month - 1, day, hours, minutes);
 
+    const primaryJob = jobs[0];
     const updatedAppointment: Appointment = {
       id: appointment.id,
-      clientName: clientName.trim(),
-      serviceType,
+      client: appointment.client,
+      jobs,
+      serviceType: primaryJob?.serviceType ?? appointment.serviceType,
+      status: appointment.status,
       startTime,
-      duration,
-      email: email.trim(),
-      ...(artist && { artist }),
-      ...(phone.trim() && { phone: phone.trim() }),
+      duration: totalDuration > 0 ? totalDuration : appointment.duration,
+      email: appointment.email,
+      ...(primaryJob?.technicianId ? { artist: primaryJob.technicianId } : {}),
+      ...(appointment.phone && { phone: appointment.phone }),
       ...(notes.trim() && { notes: notes.trim() }),
     };
 
@@ -164,7 +199,29 @@ export const DetailPanel = memo(function DetailPanel({
       onUpdate(updatedAppointment);
     }
     setIsEditing(false);
-  }, [appointment, clientName, serviceType, artist, date, time, duration, email, phone, notes, onUpdate]);
+  }, [appointment, jobs, date, time, notes, onUpdate, totalDuration]);
+
+  const handleSelectedJobServiceChange = useCallback((newServiceId: ServiceType) => {
+    setJobs((prev) => prev.map((job, index) => {
+      if (index !== selectedJobIndex) return job;
+      if (!technicianServices || !job.technicianId) {
+        return { ...job, serviceType: newServiceId };
+      }
+      const allowedForTech = technicianServices[job.technicianId];
+      const canKeepTech = !allowedForTech || allowedForTech.includes(newServiceId);
+      return {
+        serviceType: newServiceId,
+        ...(canKeepTech && job.technicianId ? { technicianId: job.technicianId } : {}),
+      };
+    }));
+  }, [selectedJobIndex, technicianServices]);
+
+  const handleSelectedJobTechnicianChange = useCallback((newTechId: string) => {
+    setJobs((prev) => prev.map((job, index) => {
+      if (index !== selectedJobIndex) return job;
+      return { serviceType: job.serviceType, ...(newTechId ? { technicianId: newTechId } : {}) };
+    }));
+  }, [selectedJobIndex]);
 
   // Handle delete
   const handleDelete = useCallback(() => {
@@ -184,7 +241,6 @@ export const DetailPanel = memo(function DetailPanel({
     return null;
   }
 
-  const colors = getServiceColors(isEditing ? serviceType : appointment.serviceType);
   const technicianColor = getTechnicianColorForAppointment(appointment, technicians);
   const endTime = addMinutes(appointment.startTime, appointment.duration);
 
@@ -221,22 +277,51 @@ export const DetailPanel = memo(function DetailPanel({
               {/* Client Name */}
               <div className="form-group">
                 <label htmlFor="panel-clientName" className="form-label">
-                  Client Name <span className="required">*</span>
+                  Client Name
                 </label>
                 <input
                   type="text"
                   id="panel-clientName"
                   value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  required
+                  disabled
                   className="form-input sm"
                 />
+              </div>
+
+              {/* Existing jobs selector */}
+              <div className="form-group">
+                <label className="form-label">
+                  Job To Edit
+                </label>
+                <div className="jobs-list">
+                  {jobs.map((job, index) => {
+                    const service = services.find((s) => s.id === job.serviceType);
+                    const tech = technicians.find((t) => t.id === job.technicianId);
+                    const isSelected = index === selectedJobIndex;
+                    return (
+                      <button
+                        key={`panel-edit-job-${index}`}
+                        type="button"
+                        className={`job-entry ${isSelected ? 'selected' : ''}`}
+                        onClick={() => setSelectedJobIndex(index)}
+                        style={{ width: '100%', textAlign: 'left', border: '1px solid var(--color-slate-200, #e2e8f0)' }}
+                        aria-label={`Edit job ${index + 1}`}
+                      >
+                        <span className="job-entry-number">{index + 1}</span>
+                        <div className="job-entry-info">
+                          <span className="job-entry-service">{service?.name ?? job.serviceType}</span>
+                          {tech && <span className="job-entry-tech">by {tech.name}</span>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Service Type */}
               <div className="form-group">
                 <label className="form-label">
-                  Service <span className="required">*</span>
+                  Service For Selected Job <span className="required">*</span>
                 </label>
                 {/* Services grouped by category */}
                 {Object.keys(servicesByCategory).map((category) => (
@@ -246,26 +331,13 @@ export const DetailPanel = memo(function DetailPanel({
                     </span>
                     <div className="service-selector">
                       {servicesByCategory[category].map((service) => {
-                        // Try to get colors for valid ServiceType, otherwise use default
-                        let serviceColors;
-                        try {
-                          serviceColors = getServiceColors(service.id);
-                        } catch {
-                          // Fallback for unknown service types
-                          serviceColors = { className: 'service-classic', badgeColor: 'var(--color-rose-400)' };
-                        }
-                        const isSelected = serviceType === service.id;
+                        const isSelected = selectedJob?.serviceType === service.id;
                         return (
                           <button
                             key={service.id}
                             type="button"
-                            onClick={() => {
-                              setServiceType(service.id);
-                              if (service.duration) {
-                                setDuration(service.duration);
-                              }
-                            }}
-                            className={`service-option ${isSelected ? 'selected ' + serviceColors.className : ''}`}
+                            onClick={() => handleSelectedJobServiceChange(service.id)}
+                            className={`service-option ${isSelected ? 'selected' : ''}`}
                             style={{ padding: '0.5rem' }}
                           >
                             <span className="service-option-label" style={{ fontSize: '0.75rem' }}>{service.name}</span>
@@ -312,64 +384,20 @@ export const DetailPanel = memo(function DetailPanel({
                 </div>
               </div>
 
-              {/* Duration */}
-              <div className="form-group">
-                <label htmlFor="panel-duration" className="form-label">Duration (minutes)</label>
-                <input
-                  type="number"
-                  id="panel-duration"
-                  value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
-                  min={15}
-                  max={300}
-                  step={15}
-                  className="form-input sm"
-                />
-              </div>
-
               {/* Technician */}
               <div className="form-group">
                 <label htmlFor="panel-technician" className="form-label">Technician</label>
                 <select
                   id="panel-technician"
-                  value={artist}
-                  onChange={(e) => setArtist(e.target.value)}
+                  value={selectedJob?.technicianId ?? ''}
+                  onChange={(e) => handleSelectedJobTechnicianChange(e.target.value)}
                   className="form-select sm"
                 >
                   <option value="">Select a technician (optional)</option>
-                  {technicians.map((tech) => (
+                  {selectedJobAvailableTechnicians.map((tech) => (
                     <option key={tech.id} value={tech.id}>{tech.name}</option>
                   ))}
                 </select>
-              </div>
-
-              {/* Email */}
-              <div className="form-group">
-                <label htmlFor="panel-email" className="form-label">
-                  Email <span className="required">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="panel-email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="client@example.com"
-                  required
-                  className="form-input sm"
-                />
-              </div>
-
-              {/* Phone */}
-              <div className="form-group">
-                <label htmlFor="panel-phone" className="form-label">Phone Number (optional)</label>
-                <input
-                  type="tel"
-                  id="panel-phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="(555) 123-4567"
-                  className="form-input sm"
-                />
               </div>
 
               {/* Notes */}
@@ -416,15 +444,36 @@ export const DetailPanel = memo(function DetailPanel({
             /* View Mode */
             <>
               {/* Service badge */}
-              <div className={`service-badge ${colors.className}`}>
-                <span className="service-badge-dot" style={{ backgroundColor: colors.badgeColor }} />
-                <span className="service-badge-text">{getServiceName(appointment.serviceType)}</span>
+              <div className="service-badge">
+                <span className="service-badge-dot" />
+                <span className="service-badge-text">Appointment Jobs</span>
               </div>
 
               {/* Client name */}
               <h3 className="detail-client-name" style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>
-                {appointment.clientName}
+                {appointment.client.name}
               </h3>
+
+              {/* Jobs */}
+              <div className="jobs-list" style={{ marginBottom: '1rem' }}>
+                {(appointment.jobs?.length
+                  ? appointment.jobs
+                  : [{ serviceType: appointment.serviceType, ...(getArtistId(appointment.artist) ? { technicianId: getArtistId(appointment.artist) } : {}) }]).map((job, index) => {
+                  const service = services.find((s) => s.id === job.serviceType);
+                  const tech = technicians.find((t) => t.id === job.technicianId);
+                  const duration = getServiceDuration(job.serviceType);
+                  return (
+                    <div key={`panel-view-job-${index}`} className="job-entry">
+                      <span className="job-entry-number">{index + 1}</span>
+                      <div className="job-entry-info">
+                        <span className="job-entry-service">{service?.name ?? job.serviceType}</span>
+                        {tech && <span className="job-entry-tech">by {tech.name}</span>}
+                      </div>
+                      {duration > 0 && <span className="job-entry-duration">{duration} min</span>}
+                    </div>
+                  );
+                })}
+              </div>
 
               {/* Details */}
               <div className="detail-list" style={{ gap: '1rem' }}>

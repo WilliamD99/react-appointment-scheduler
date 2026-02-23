@@ -5,6 +5,16 @@
 /** Available lash service types (stores service ID) */
 export type ServiceType = string;
 
+/** Category object when provided by API */
+export interface ServiceCategory {
+  id: number;
+  name: string;
+  description?: string | null;
+  image?: string | null;
+  updatedAt?: string;
+  createdAt?: string;
+}
+
 /**
  * Represents a service that can be booked.
  * 
@@ -12,8 +22,7 @@ export type ServiceType = string;
  * ```ts
  * const services: Service[] = [
  *   { id: '1', name: 'Classic Lashes', category: 'lashes' },
- *   { id: '2', name: 'Regular Pedicure', category: 'nails' },
- *   { id: '3', name: 'Volume Lashes', category: 'lashes' },
+ *   { id: '2', name: 'Regular Pedicure', category: { id: 1, name: 'Nail' } },
  * ];
  * ```
  */
@@ -22,8 +31,8 @@ export interface Service {
   id: string;
   /** Display name of the service */
   name: string;
-  /** Category for grouping services (e.g., 'lashes', 'nails', 'facial') */
-  category: string;
+  /** Category for grouping: string (legacy) or category object with id and name */
+  category: string | ServiceCategory;
   /** Optional duration in minutes for this service */
   duration?: number;
 }
@@ -96,6 +105,8 @@ export type DetailDisplayMode = 'modal' | 'panel';
 export type Artist = string | { id: string; name?: string };
 
 export type Client = { name: string; path: string }
+/** Status options for appointments */
+export type AppointmentStatus = 'pending' | 'confirmed' | 'canceled' | 'completed';
 /**
  * Represents a single appointment in the scheduler
  */
@@ -104,6 +115,8 @@ export interface Appointment {
   id: string;
   /** Name of the client */
   client: Client;
+  /** Optional list of jobs (multi-service appointment support) */
+  jobs?: Job[];
   /** Type of lash service being performed */
   serviceType: ServiceType;
   /** Lash artist: string id or object { id, name } (objects supported when data comes from APIs) */
@@ -114,6 +127,8 @@ export interface Appointment {
   duration: number;
   /** Optional notes about the appointment */
   notes?: string;
+  /** Appointment status */
+  status: AppointmentStatus;
   /** Optional phone number for client contact */
   phone?: string;
   /** Email address for client contact */
@@ -121,12 +136,36 @@ export interface Appointment {
 }
 
 /**
- * Data for creating a new appointment (without ID)
+ * Represents a single job within an appointment.
+ * Each job corresponds to one service performed by one technician.
+ * 
+ * @example
+ * ```ts
+ * const jobs: Job[] = [
+ *   { serviceType: 'service-1', technicianId: 'tech-1' },
+ *   { serviceType: 'service-1', technicianId: 'tech-2' },
+ *   { serviceType: 'service-3', technicianId: 'tech-1' },
+ * ];
+ * ```
+ */
+export interface Job {
+  /** The service ID for this job */
+  serviceType: ServiceType;
+  /** The technician assigned to perform this job */
+  technicianId?: string;
+}
+
+/**
+ * Data for creating a new appointment (without ID).
+ * An appointment can have multiple jobs (services).
  */
 export interface NewAppointmentData {
   client: Client;
-  serviceType: ServiceType;
+  /** List of jobs (services) for this appointment */
+  jobs: Job[];
   artist?: string;
+  /** Status for newly created appointments (defaults to 'pending' when omitted) */
+  status?: AppointmentStatus;
   startTime: Date;
   duration: number;
   email: string;

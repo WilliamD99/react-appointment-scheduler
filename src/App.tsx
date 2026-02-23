@@ -1,5 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Scheduler, type Appointment, type DetailDisplayMode, type NewAppointmentData } from './components/Scheduler';
+import {
+    Scheduler,
+    type Appointment,
+    type AppointmentStatus,
+    type DetailDisplayMode,
+    type NewAppointmentData,
+} from './components/Scheduler';
 import { initializeTheme } from './utils/themeUtils';
 
 /**
@@ -10,6 +16,8 @@ import { initializeTheme } from './utils/themeUtils';
  */
 
 // Generate mock appointments for the current week
+const APPOINTMENT_STATUSES: AppointmentStatus[] = ['pending', 'confirmed', 'canceled', 'completed'];
+
 function generateMockAppointments(): Appointment[] {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -20,7 +28,7 @@ function generateMockAppointments(): Appointment[] {
 
     const artists = ['Emma Wilson', 'Sofia Chen', 'Maya Rodriguez'];
 
-    const appointments: Appointment[] = [
+    const appointments = [
         // Today's appointments
         {
             id: '1',
@@ -166,7 +174,10 @@ function generateMockAppointments(): Appointment[] {
 
     ];
 
-    return appointments;
+    return appointments.map((appointment, index) => ({
+        ...appointment,
+        status: APPOINTMENT_STATUSES[index % APPOINTMENT_STATUSES.length],
+    }));
 }
 
 function createDate(baseDate: Date, hours: number, minutes: number): Date {
@@ -210,14 +221,20 @@ export default function App() {
             console.log('Create appointment:', appointmentData);
 
             // Create new appointment with a unique ID
+            // Use the first job's serviceType for display; full jobs array is in appointmentData
+            const firstJob = appointmentData.jobs[0];
+            const primaryServiceType = firstJob?.serviceType ?? '';
+            const primaryArtist = firstJob?.technicianId;
+
             const newAppointment: Appointment = {
                 id: `new-${Date.now()}`,
                 client: appointmentData.client,
-                serviceType: appointmentData.serviceType,
+                serviceType: primaryServiceType,
                 startTime: appointmentData.startTime,
                 duration: appointmentData.duration,
                 email: appointmentData.email,
-                ...(appointmentData.artist && { artist: appointmentData.artist }),
+                status: appointmentData.status ?? 'pending',
+                ...(primaryArtist && { artist: primaryArtist }),
                 ...(appointmentData.phone && { phone: appointmentData.phone }),
                 ...(appointmentData.notes && { notes: appointmentData.notes }),
             };

@@ -2,7 +2,6 @@ import { memo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import type { Appointment, AppointmentLayout } from '../../types/scheduler';
 import { getServiceDisplayName, DEFAULT_TECHNICIAN_COLOR } from '../../utils/colorUtils';
-import { getArtistDisplayName } from '../../utils/artistUtils';
 import { formatTime, addMinutes } from '../../utils/timeUtils';
 
 /**
@@ -68,6 +67,9 @@ export const AppointmentBlock = memo(function AppointmentBlock({
 
   // Combine local and prop-based dragging state
   const isCurrentlyDragging = isDragging || isDraggingLocal;
+  const appointmentStatus = appointment.status ?? 'pending';
+  const statusClassName = `appointment-status-${appointmentStatus}`;
+  const statusLabel = appointmentStatus.charAt(0).toUpperCase() + appointmentStatus.slice(1);
 
   // Build transform style for drag preview
   const style: React.CSSProperties = {
@@ -133,11 +135,9 @@ export const AppointmentBlock = memo(function AppointmentBlock({
           <p className="appointment-time">
             {formatTime(appointment.startTime)} – {formatTime(endTime)}
           </p>
-          {getArtistDisplayName(appointment.artist) && (
-            <p className="appointment-artist">
-              {getArtistDisplayName(appointment.artist)}
-            </p>
-          )}
+          <p className={`appointment-status ${statusClassName}`}>
+            {statusLabel}
+          </p>
         </div>
 
       </div>

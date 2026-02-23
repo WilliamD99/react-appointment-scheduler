@@ -1,18 +1,24 @@
 import { memo, useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import type { ServiceType, NewAppointmentData, TechnicianServices, Service, Technician } from '../../types/scheduler';
+import type { ServiceType, NewAppointmentData, TechnicianServices, Service, Technician, Job } from '../../types/scheduler';
 
 /**
  * CreateAppointmentModal Component
  * 
  * A modal for creating new appointments with form fields for:
  * - Client name
- * - Service type
+ * - Jobs (each job = service + technician pair)
  * - Start time
  * - Email (required)
  * - Phone (optional)
- * - Artist (optional)
  * - Notes (optional)
  */
+
+/** Internal type for a job entry in the builder */
+interface JobEntry {
+  serviceId: ServiceType;
+  technicianId: string;
+  key: string;
+}
 
 interface CreateAppointmentModalProps {
   /** Whether the modal is open */
@@ -33,7 +39,8 @@ interface CreateAppointmentModalProps {
   services: Service[];
   /** 
    * Map of technician IDs to service IDs they can perform.
-   * When provided, services will be filtered based on the selected technician.
+   * When provided, technician dropdown in the job builder will be
+   * filtered based on the selected service.
    */
   technicianServices?: TechnicianServices;
 }
@@ -43,7 +50,7 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
   onClose,
   onCreate,
   initialStartTime,
-  initialEndTime,
+  initialEndTime: _initialEndTime,
   initialTechnicianId,
   technicians = [],
   services,
@@ -54,46 +61,6 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
 
   // Form state
   const [clientName, setClientName] = useState('');
-  const [technicianId, setTechnicianId] = useState('');
-
-  // Get available services for the selected technician
-  const availableServices = useMemo(() => {
-    // If technicianServices map is provided and a technician is selected
-    if (technicianServices && technicianId && technicianServices[technicianId]) {
-      // Return only services this technician can perform (filter by service ID)
-      const techServiceIds = technicianServices[technicianId];
-      return services.filter(service => techServiceIds.includes(service.id));
-    }
-    // Otherwise, return all services
-    return services;
-  }, [services, technicianServices, technicianId]);
-
-  // Get the selected technician object for display
-  const selectedTechnician = useMemo(() => {
-    return technicians.find(t => t.id === technicianId);
-  }, [technicians, technicianId]);
-
-  // Group services by category for better organization
-  const servicesByCategory = useMemo(() => {
-    const grouped: Record<string, Service[]> = {};
-    availableServices.forEach((service) => {
-      if (!grouped[service.category]) {
-        grouped[service.category] = [];
-      }
-      grouped[service.category].push(service);
-    });
-    return grouped;
-  }, [availableServices]);
-
-  // Get unique categories in order
-  const categories = useMemo(() => {
-    return Object.keys(servicesByCategory);
-  }, [servicesByCategory]);
-
-  // Service type now stores the service ID
-  const [serviceType, setServiceType] = useState<ServiceType>(
-    availableServices.length > 0 ? availableServices[0].id : ''
-  );
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [email, setEmail] = useState('');
@@ -101,10 +68,74 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
   const [notes, setNotes] = useState('');
   const [submitError, setSubmitError] = useState('');
 
-  // Reset form and set initial values when modal opens.
-  // IMPORTANT: Do NOT include availableServices in deps — it depends on technicianId.
-  // Including it would re-run this effect when the user selects a technician and
-  // reset technicianId back to initialTechnicianId, preventing the selection from sticking.
+  // Jobs list - each job is a (service, technician) pair
+  const [jobs, setJobs] = useState<JobEntry[]>([]);
+  
+  // Job builder state
+  const [builderServiceId, setBuilderServiceId] = useState<ServiceType>('');
+  const [builderTechnicianId, setBuilderTechnicianId] = useState<string>('');
+
+  // Services available for the currently selected builder technician
+  // If no tech selected or no technicianServices map, show all services
+  const builderAvailableServices = useMemo(() => {
+    if (!builderTechnicianId || !technicianServices) return services;
+    const allowedServiceIds = technicianServices[builderTechnicianId];
+    if (!allowedServiceIds) return services;
+    return services.filter(s => allowedServiceIds.includes(s.id));
+  }, [builderTechnicianId, technicianServices, services]);
+
+  // Group available services by category
+  const servicesByCategory = useMemo(() => {
+    const grouped: Record<string, Service[]> = {};
+    builderAvailableServices.forEach((service) => {
+      const categoryKey =
+        typeof service.category === 'string'
+          ? service.category
+          : (service.category?.name ?? 'Uncategorized');
+      if (!grouped[categoryKey]) {
+        grouped[categoryKey] = [];
+      }
+      grouped[categoryKey].push(service);
+    });
+    return grouped;
+  }, [builderAvailableServices]);
+
+  const categories = useMemo(() => Object.keys(servicesByCategory), [servicesByCategory]);
+
+  // Reverse map: service ID → technician IDs who can perform it
+  const techniciansByService = useMemo(() => {
+    if (!technicianServices) return {};
+    const map: Record<string, string[]> = {};
+    for (const [techId, serviceIds] of Object.entries(technicianServices)) {
+      for (const serviceId of serviceIds) {
+        if (!map[serviceId]) map[serviceId] = [];
+        map[serviceId].push(techId);
+      }
+    }
+    return map;
+  }, [technicianServices]);
+
+  // Technicians available for the currently selected builder service
+  const builderAvailableTechnicians = useMemo(() => {
+    if (!builderServiceId || !techniciansByService[builderServiceId]) {
+      return technicians;
+    }
+    const availTechIds = techniciansByService[builderServiceId];
+    return technicians.filter(t => availTechIds.includes(t.id));
+  }, [builderServiceId, techniciansByService, technicians]);
+
+  // Get duration for a service (uses actual value, falls back to 0 if not set)
+  const getServiceDuration = useCallback((serviceId: ServiceType): number => {
+    const service = services.find(s => s.id === serviceId);
+    return service?.duration ?? 0;
+  }, [services]);
+
+  // Total duration from all jobs
+  const totalDuration = useMemo(() => {
+    return jobs.reduce((sum, job) => sum + getServiceDuration(job.serviceId), 0);
+  }, [jobs, getServiceDuration]);
+
+  // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
       setClientName('');
@@ -112,49 +143,31 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
       setPhone('');
       setNotes('');
       setSubmitError('');
-      // Pre-select technician if provided (from day view slot click)
-      const initialTechId = initialTechnicianId || '';
-      setTechnicianId(initialTechId);
-
-      // Compute initial available services for the pre-selected technician (not state)
-      let initialAvailable = services;
-      if (technicianServices && initialTechId && technicianServices[initialTechId]) {
-        const techServiceIds = technicianServices[initialTechId];
-        initialAvailable = services.filter(service => techServiceIds.includes(service.id));
-      }
-      setServiceType(initialAvailable.length > 0 ? initialAvailable[0].id : '');
+      setJobs([]);
+      setBuilderServiceId('');
+      setBuilderTechnicianId(initialTechnicianId || '');
 
       if (initialStartTime) {
-        // Format date as YYYY-MM-DD for input
         const year = initialStartTime.getFullYear();
         const month = String(initialStartTime.getMonth() + 1).padStart(2, '0');
         const day = String(initialStartTime.getDate()).padStart(2, '0');
         setDate(`${year}-${month}-${day}`);
 
-        // Format time as HH:MM for input
         const hours = String(initialStartTime.getHours()).padStart(2, '0');
         const minutes = String(initialStartTime.getMinutes()).padStart(2, '0');
         setTime(`${hours}:${minutes}`);
-
-        // Calculate duration from end time if available
-        if (initialEndTime) {
-          const diffMinutes = Math.round((initialEndTime.getTime() - initialStartTime.getTime()) / 60000);
-          if (diffMinutes >= 30) {
-          }
-        }
       } else {
-        // Default to today and next hour
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
         setDate(`${year}-${month}-${day}`);
 
-        const nextHour = now.getHours() + 1;
+        const nextHour = (now.getHours() + 1) % 24;
         setTime(`${String(nextHour).padStart(2, '0')}:00`);
       }
     }
-  }, [isOpen, initialStartTime, initialEndTime, initialTechnicianId, services, technicianServices]);
+  }, [isOpen, initialStartTime, initialTechnicianId]);
 
   // Handle escape key
   useEffect(() => {
@@ -187,35 +200,44 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
     };
   }, [isOpen]);
 
-  // Get duration based on service ID - looks up from service object or uses default
-  const getServiceDuration = useCallback((serviceId: ServiceType): number => {
-    const service = services.find(s => s.id === serviceId);
-    // Use service's duration if defined, otherwise default to 60 minutes
-    return service?.duration ?? 60;
-  }, [services]);
-
-  // Update duration when service type changes
-  const handleServiceChange = useCallback((newService: ServiceType) => {
-    setServiceType(newService);
-  }, []);
-
-  // Handle technician change - reset service if not available for new technician
-  const handleTechnicianChange = useCallback((newTechnicianId: string) => {
-    setTechnicianId(newTechnicianId);
-
-    // Check if current service is available for the new technician
-    if (technicianServices && newTechnicianId && technicianServices[newTechnicianId]) {
-      const techServiceIds = technicianServices[newTechnicianId];
-      if (!techServiceIds.includes(serviceType)) {
-        // Current service not available, reset to first available
-        // Find a service that's both in techServiceIds and main services list
-        const firstAvailable = services.find(s => techServiceIds.includes(s.id));
-        if (firstAvailable) {
-          setServiceType(firstAvailable.id);
-        }
+  // When builder service changes, reset technician if they can't do the new service
+  const handleBuilderServiceChange = useCallback((newServiceId: ServiceType) => {
+    setBuilderServiceId(newServiceId);
+    if (technicianServices && builderTechnicianId && newServiceId) {
+      const techsForService = techniciansByService[newServiceId];
+      if (techsForService && !techsForService.includes(builderTechnicianId)) {
+        setBuilderTechnicianId('');
       }
     }
-  }, [technicianServices, serviceType, services]);
+  }, [technicianServices, builderTechnicianId, techniciansByService]);
+
+  // When builder technician changes, reset service if the tech can't perform it
+  const handleBuilderTechnicianChange = useCallback((newTechId: string) => {
+    setBuilderTechnicianId(newTechId);
+    if (technicianServices && builderServiceId && newTechId) {
+      const allowedServiceIds = technicianServices[newTechId];
+      if (allowedServiceIds && !allowedServiceIds.includes(builderServiceId)) {
+        setBuilderServiceId('');
+      }
+    }
+  }, [technicianServices, builderServiceId]);
+
+  // Add a job from the builder
+  const handleAddJob = useCallback(() => {
+    if (!builderServiceId) return;
+    setJobs(prev => [...prev, {
+      serviceId: builderServiceId,
+      technicianId: builderTechnicianId,
+      key: `job-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    }]);
+    setBuilderServiceId('');
+    setBuilderTechnicianId(initialTechnicianId || '');
+  }, [builderServiceId, builderTechnicianId, initialTechnicianId]);
+
+  // Remove a job by key
+  const handleRemoveJob = useCallback((key: string) => {
+    setJobs(prev => prev.filter(j => j.key !== key));
+  }, []);
 
   // Handle form submission
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -223,11 +245,12 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
     setSubmitError('');
 
     if (!clientName.trim() || !date || !time || !email.trim()) {
+      setSubmitError('Please fill in all required fields (client name, date, time, and email).');
       return;
     }
 
-    if (!serviceType) {
-      setSubmitError('Please select a service.');
+    if (jobs.length === 0) {
+      setSubmitError('Please add at least one job (service).');
       return;
     }
 
@@ -236,23 +259,25 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
     const [hours, minutes] = time.split(':').map(Number);
     const startTime = new Date(year, month - 1, day, hours, minutes);
 
-    // Get duration based on service type
-    const duration = getServiceDuration(serviceType);
+    // Build jobs array
+    const jobsData: Job[] = jobs.map(j => ({
+      serviceType: j.serviceId,
+      ...(j.technicianId && { technicianId: j.technicianId }),
+    }));
 
     const appointmentData: NewAppointmentData = {
       client: { name: clientName.trim(), path: '' },
-      serviceType,
+      jobs: jobsData,
       startTime,
-      duration,
+      duration: totalDuration,
       email: email.trim(),
-      ...(technicianId && { artist: technicianId }),
       ...(phone.trim() && { phone: phone.trim() }),
       ...(notes.trim() && { notes: notes.trim() }),
     };
 
     onCreate(appointmentData);
     onClose();
-  }, [clientName, serviceType, technicianId, date, time, email, phone, notes, getServiceDuration, onCreate, onClose]);
+  }, [clientName, jobs, date, time, email, phone, notes, totalDuration, onCreate, onClose]);
 
   if (!isOpen) {
     return null;
@@ -302,56 +327,99 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
             />
           </div>
 
-          {/* Technician - placed before Service Type so filtering works logically */}
+          {/* Jobs - each job is a service + technician pair */}
           <div className="form-group">
-            <label htmlFor="technician" className="form-label">Technician</label>
-            <select
-              id="technician"
-              value={technicianId}
-              onChange={(e) => handleTechnicianChange(e.target.value)}
-              className="form-select"
-            >
-              <option value="">Select a technician (optional)</option>
-              {technicians.map((tech) => (
-                <option key={tech.id} value={tech.id}>{tech.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Service Type */}
-          <div className="form-group">
-            <label htmlFor="serviceType" className="form-label">
-              Service <span className="required">*</span>
-              {/* Show helper text when services are filtered by technician */}
-              {technicianServices && technicianId && technicianServices[technicianId] && selectedTechnician && (
-                <span className="form-helper-text" style={{ marginLeft: '0.5rem', marginTop: 0 }}>
-                  ({availableServices.length} available for {selectedTechnician.name})
-                </span>
-              )}
+            <label className="form-label">
+              Jobs <span className="required">*</span>
             </label>
-            {/* Services grouped by category */}
-            {categories.map((category) => (
-              <div key={category} className="service-category">
-                <span className="service-category-label">
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </span>
-                <div className="service-selector">
-                  {servicesByCategory[category].map((service) => {
-                    const isSelected = serviceType === service.id;
-                    return (
+
+            {/* Added jobs list */}
+            {jobs.length > 0 && (
+              <div className="jobs-list">
+                {jobs.map((job, index) => {
+                  const service = services.find(s => s.id === job.serviceId);
+                  const tech = technicians.find(t => t.id === job.technicianId);
+                  const duration = service?.duration;
+                  return (
+                    <div key={job.key} className="job-entry">
+                      <span className="job-entry-number">{index + 1}</span>
+                      <div className="job-entry-info">
+                        <span className="job-entry-service">
+                          {service?.name ?? job.serviceId}
+                        </span>
+                        {tech && (
+                          <span className="job-entry-tech">by {tech.name}</span>
+                        )}
+                      </div>
+                      {duration != null && duration > 0 && (
+                        <span className="job-entry-duration">{duration} min</span>
+                      )}
                       <button
-                        key={service.id}
                         type="button"
-                        onClick={() => handleServiceChange(service.id)}
-                        className={`service-option ${isSelected ? 'selected ' : ''}`}
+                        className="job-entry-remove"
+                        onClick={() => handleRemoveJob(job.key)}
+                        aria-label={`Remove job ${index + 1}`}
                       >
-                        <span className="service-option-label">{service.name}</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
                       </button>
-                    );
-                  })}
+                    </div>
+                  );
+                })}
+                <div className="jobs-summary">
+                  <span>{jobs.length} job{jobs.length !== 1 ? 's' : ''}</span>
+                  {totalDuration > 0 && (
+                    <span className="jobs-summary-duration">{totalDuration} min total</span>
+                  )}
                 </div>
               </div>
-            ))}
+            )}
+
+            {/* Job builder row */}
+            <div className="job-builder">
+              <div className="job-builder-fields">
+                <select
+                  value={builderServiceId}
+                  onChange={(e) => handleBuilderServiceChange(e.target.value)}
+                  className="form-select"
+                  aria-label="Select a service"
+                >
+                  <option value="">Select a service...</option>
+                  {categories.map((category) => (
+                    <optgroup key={category} label={category.charAt(0).toUpperCase() + category.slice(1)}>
+                      {servicesByCategory[category].map((service) => (
+                        <option key={service.id} value={service.id}>
+                          {service.name}{service.duration != null ? ` (${service.duration} min)` : ''}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                <select
+                  value={builderTechnicianId}
+                  onChange={(e) => handleBuilderTechnicianChange(e.target.value)}
+                  className="form-select"
+                  aria-label="Select a technician"
+                >
+                  <option value="">Technician (optional)</option>
+                  {builderAvailableTechnicians.map((tech) => (
+                    <option key={tech.id} value={tech.id}>{tech.name}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={handleAddJob}
+                className="btn btn-outline job-builder-add-btn"
+                disabled={!builderServiceId}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Add
+              </button>
+            </div>
           </div>
 
           {/* Date and Time */}

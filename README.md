@@ -1,17 +1,18 @@
 # react-appointment-scheduler
 
-A production-ready React scheduler component for appointment management. Features day/week views, drag-and-drop rescheduling, color-coded appointment types, and a beautiful, minimal UI.
+A production-ready React scheduler component for appointment management. Features day/week views, drag-and-drop rescheduling, create-appointment modal with **multiple jobs per appointment** (service + technician per job), and a minimal, themeable UI.
 
 ## Features
 
 - **Day & Week Views** - Toggle between single day and full week layouts
 - **Drag & Drop** - Reschedule appointments by dragging to new times or days
-- **Color-Coded Types** - 4 customizable service types with distinct colors
+- **Create Appointment** - Modal to add appointments with multiple jobs (each job = one service + optional technician)
 - **Overlap Handling** - Automatically stacks overlapping appointments
 - **Detail Views** - Modal or side panel for appointment details
 - **Responsive** - Desktop-first with mobile support
 - **TypeScript** - Full type definitions included
 - **Accessible** - Keyboard navigation and ARIA labels
+- **Theming** - CSS variables and built-in light/dark mode
 
 ## Installation
 
@@ -29,38 +30,41 @@ npm install react react-dom
 
 ### Styles
 
-Import the component styles in your app:
+Import the component styles **once** in your app (e.g. root layout or main entry):
 
 ```tsx
 import 'react-appointment-scheduler/styles.css';
 ```
 
-## Usage
+The scheduler needs a **defined height** (e.g. `height: 600px` or `min-height: 70vh`).
 
-### Basic Example
+## Quick start
 
 ```tsx
-import { Scheduler, type Appointment } from 'react-appointment-scheduler';
+import { Scheduler } from 'react-appointment-scheduler';
+import type { Appointment, Service, Technician } from 'react-appointment-scheduler';
 import 'react-appointment-scheduler/styles.css';
 
 const appointments: Appointment[] = [
   {
     id: '1',
-    clientName: 'Sarah Johnson',
-    serviceType: 'Volume',
-    artist: 'Emma Wilson',
-    startTime: new Date('2024-01-15T09:00:00'),
-    duration: 150,
-    phone: '(555) 123-4567',
-    notes: 'First-time client',
+    client: { name: 'Sarah Johnson', path: '' },
+    serviceType: 'classic-lashes',
+    artist: 'tech-1',
+    startTime: new Date('2025-02-17T09:00:00'),
+    duration: 60,
+    email: 'sarah@example.com',
   },
-  {
-    id: '2',
-    clientName: 'Emily Chen',
-    serviceType: 'Classic',
-    startTime: new Date('2024-01-15T14:00:00'),
-    duration: 90,
-  },
+];
+
+const services: Service[] = [
+  { id: 'classic-lashes', name: 'Classic Lashes', category: 'Lashes', duration: 60 },
+  { id: 'quick-touchup', name: 'Quick Touch-up', category: 'Lashes', duration: 30 },
+];
+
+const technicians: Technician[] = [
+  { id: 'tech-1', name: 'Emma Wilson', color: '#fb7185' },
+  { id: 'tech-2', name: 'Alex Chen', color: '#a78bfa' },
 ];
 
 function App() {
@@ -68,12 +72,15 @@ function App() {
     <div style={{ height: '600px' }}>
       <Scheduler
         appointments={appointments}
+        services={services}
+        technicians={technicians}
+        technicianServices={{ 'tech-1': ['classic-lashes', 'quick-touchup'], 'tech-2': ['classic-lashes'] }}
         startHour={8}
         endHour={21}
         view="week"
         detailDisplay="modal"
         onSelectAppointment={(apt) => console.log('Selected:', apt)}
-        onCreateAppointment={(start, end) => console.log('Create:', start, end)}
+        onNewAppointment={(data) => console.log('Create:', data)}
         onRescheduleAppointment={(id, newTime) => console.log('Reschedule:', id, newTime)}
       />
     </div>
@@ -81,54 +88,51 @@ function App() {
 }
 ```
 
-## API Reference
+## Documentation for your project
 
-### `<Scheduler />` Props
+**→ [USAGE.md](./USAGE.md)** – Integration guide for using this package in another app. It includes:
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `appointments` | `Appointment[]` | required | Array of appointments to display |
-| `startHour` | `number` | `8` | Working hours start (0-23) |
-| `endHour` | `number` | `21` | Working hours end (0-23) |
-| `view` | `'day' \| 'week'` | `'week'` | Initial view mode |
-| `selectedDate` | `Date` | today | Initially selected/focused date |
-| `detailDisplay` | `'modal' \| 'panel'` | `'modal'` | How to show appointment details |
-| `onSelectAppointment` | `(apt: Appointment) => void` | - | Called when clicking an appointment |
-| `onCreateAppointment` | `(start: Date, end: Date) => void` | - | Called when clicking an empty slot |
-| `onRescheduleAppointment` | `(id: string, newStart: Date) => void` | - | Called after drag-and-drop |
+- **Data model** – `Appointment`, `Service`, `Technician`, `Job`, `NewAppointmentData`, `Client`, `TechnicianServices`
+- **Styling** – Importing CSS, CSS variables, dark mode
+- **Create appointment flow** – Multiple jobs per appointment, handling `onNewAppointment` and persisting `jobs`
+- **Props reference** – All Scheduler props and callbacks
+- **TypeScript** – Exported types
+- **Checklist** – Steps to wire the scheduler into your backend
 
-### `Appointment` Type
+## API overview
 
-```typescript
-interface Appointment {
-  id: string;
-  clientName: string;
-  serviceType: 'Classic' | 'Hybrid' | 'Volume' | 'Refill';
-  artist?: string;
-  startTime: Date;
-  duration: number; // minutes
-  notes?: string;
-  phone?: string;
-}
-```
+### Main props
 
-### Service Types & Colors
+| Prop | Type | Description |
+|------|------|-------------|
+| `appointments` | `Appointment[]` | Appointments to display |
+| `services` | `Service[]` or `string[]` | Bookable services (with `duration` for correct times) |
+| `technicians` | `Technician[]` | Staff; optional, used in Create modal and block colors |
+| `technicianServices` | `Record<string, string[]>` | Map tech ID → service IDs; filters technician dropdown by service |
+| `startHour` / `endHour` | `number` | Grid hours (default 8–21) |
+| `view` | `'day' \| 'week'` | View mode |
+| `detailDisplay` | `'modal' \| 'panel'` | How details are shown |
+| `onNewAppointment` | `(data: NewAppointmentData) => void` | Called when user creates an appointment (includes `jobs[]`) |
+| `onSelectAppointment` | `(apt: Appointment) => void` | Click on appointment |
+| `onUpdateAppointment` | `(apt: Appointment) => void` | User saved edits (includes updated `jobs` when present) |
+| `onDeleteAppointment` | `(id: string) => void` | User deleted |
+| `onRescheduleAppointment` | `(id: string, newStart: Date) => void` | After drag-and-drop |
 
-| Type | Color | Use Case Example |
-|------|-------|------------------|
-| Classic | Rose/Pink | Standard service |
-| Hybrid | Lavender/Violet | Mixed/combination service |
-| Volume | Peach/Amber | Premium/extended service |
-| Refill | Sage/Emerald | Maintenance/follow-up |
+### Data shapes (summary)
 
-## Advanced Usage
+- **Appointment**: `id`, `client: { name, path }`, `jobs?`, `serviceType`, `artist?`, `startTime`, `duration`, `email`, `phone?`, `notes?`
+- **NewAppointmentData** (from Create modal): `client`, `jobs: { serviceType, technicianId? }[]`, `startTime`, `duration`, `email`, `phone?`, `notes?`
+- **Service**: `id`, `name`, `category` (string or `{ id, name }`), `duration?` (minutes)
+- **Technician**: `id`, `name`, `color?`
 
-### Server-Side Rendering (SSR)
+## Advanced usage
 
-The package is fully compatible with SSR frameworks like Next.js, Remix, and others. When using with Next.js App Router:
+### SSR (Next.js, Remix, etc.)
+
+Use the scheduler in a client component and import the styles once:
 
 ```tsx
-'use client'; // Required for client components
+'use client';
 
 import { Scheduler } from 'react-appointment-scheduler';
 import 'react-appointment-scheduler/styles.css';
@@ -136,63 +140,42 @@ import 'react-appointment-scheduler/styles.css';
 export default function SchedulerPage() {
   return (
     <div style={{ height: '600px' }}>
-      <Scheduler
-        appointments={appointments}
-        startHour={8}
-        endHour={21}
-      />
+      <Scheduler appointments={appointments} services={services} />
     </div>
   );
 }
 ```
 
-The component automatically handles SSR gracefully - all browser APIs (`localStorage`, `window`, `document`) are safely accessed only on the client side.
+### Theme (light/dark)
 
-### Dark/Light Theme Support
-
-The package includes built-in theme support. See [THEME_DOCS.md](./THEME_DOCS.md) for detailed documentation.
+Set `data-theme="dark"` on the document root for dark mode. You can use the package helpers:
 
 ```tsx
 import { ThemeToggle, initializeTheme } from 'react-appointment-scheduler';
 import { useEffect } from 'react';
 
-function App() {
-  useEffect(() => {
-    initializeTheme();
-  }, []);
-
-  return (
-    <div>
-      <ThemeToggle />
-      <Scheduler {...props} />
-    </div>
-  );
-}
+useEffect(() => { initializeTheme(); }, []);
+// Then render <ThemeToggle /> and <Scheduler {...props} />
 ```
 
-### Custom Styling
+See [THEME_DOCS.md](./THEME_DOCS.md) for details.
 
-The component uses CSS custom properties (CSS variables) for theming. You can customize colors by overriding the CSS variables:
+### Custom styling
+
+Override CSS variables in your app (all prefixed with `--scheduler-*`):
 
 ```css
 :root {
-  /* Override service type colors */
-  --color-rose-400: #your-custom-color;
-  --color-violet-400: #your-custom-color;
-  --color-amber-400: #your-custom-color;
-  --color-emerald-400: #your-custom-color;
+  --scheduler-bg-primary: #ffffff;
+  --scheduler-text-primary: #1c1917;
+  --scheduler-border-primary: #e7e5e4;
+  --scheduler-slot-height: 60px;
 }
 ```
 
-Service type CSS classes are available for styling:
-- `.service-classic` - Rose/Pink theme
-- `.service-hybrid` - Violet/Lavender theme
-- `.service-volume` - Amber/Peach theme
-- `.service-refill` - Emerald/Sage theme
+Full list and dark-mode variables are in [USAGE.md](./USAGE.md#theming-and-css-variables).
 
-### Using Individual Components
-
-You can import and use sub-components for custom layouts:
+### Sub-components and utilities
 
 ```tsx
 import {
@@ -200,59 +183,30 @@ import {
   WeekView,
   TimeGrid,
   AppointmentBlock,
+  CreateAppointmentModal,
   useScheduler,
   useDragDrop,
-} from 'react-appointment-scheduler';
-```
-
-### Utility Functions
-
-```tsx
-import {
   formatTime,
   formatFullDate,
-  calculateAppointmentLayouts,
-  filterAppointmentsByDay,
 } from 'react-appointment-scheduler';
-
-// Format time: "9:00 AM"
-formatTime(new Date());
-
-// Format date: "Monday, January 15, 2024"
-formatFullDate(new Date());
-```
-
-## Styling
-
-The component container should have a defined height:
-
-```tsx
-<div style={{ height: '600px' }}>
-  <Scheduler appointments={appointments} />
-</div>
-```
-
-Or use viewport height:
-
-```tsx
-<div style={{ height: 'calc(100vh - 200px)' }}>
-  <Scheduler appointments={appointments} />
-</div>
 ```
 
 ## TypeScript
 
-Full TypeScript support with exported types:
+Types are exported for use in your app:
 
 ```tsx
 import type {
   Appointment,
+  NewAppointmentData,
+  Job,
+  Service,
+  Technician,
+  TechnicianServices,
+  Client,
   SchedulerProps,
-  ServiceType,
   ViewMode,
   DetailDisplayMode,
-  AppointmentLayout,
-  TimeSlot,
 } from 'react-appointment-scheduler';
 ```
 
