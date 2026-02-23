@@ -106,7 +106,7 @@ export type Artist = string | { id: string; name?: string };
 
 export type Client = { name: string; path: string }
 /** Status options for appointments */
-export type AppointmentStatus = 'pending' | 'confirmed' | 'canceled' | 'completed';
+export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 /**
  * Represents a single appointment in the scheduler
  */
