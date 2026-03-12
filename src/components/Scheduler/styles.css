@@ -1763,3 +1763,349 @@
   width: 1.25rem;
   height: 1.25rem;
 }
+
+/* ============================================
+   Mobile / Touch Support
+   ============================================ */
+
+/* Prevent browser pull-to-refresh and overscroll during drag */
+.scheduler-container {
+  overscroll-behavior: contain;
+}
+
+/* Draggable items must suppress touch browser gestures */
+.appointment-block {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Larger touch target for mobile appointment blocks */
+@media (pointer: coarse) {
+  .appointment-block {
+    min-height: 44px;
+  }
+
+  .appointment-block::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+  }
+}
+
+/* During active drag, lock the body to prevent scroll fighting */
+.scheduler-container.is-dragging {
+  overflow: hidden;
+}
+
+.scheduler-container.is-dragging .view-scroll-area {
+  overflow: hidden;
+}
+
+/* Drag overlay: force GPU layer for smooth mobile rendering */
+.drag-overlay {
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* ============================================
+   Responsive: Small screens (≤ 768px)
+   ============================================ */
+@media (max-width: 768px) {
+  /* Header: stack nav and controls vertically */
+  .scheduler-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .scheduler-nav {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .scheduler-controls {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Hide status filter label on mobile */
+  .status-filter-label {
+    display: none;
+  }
+
+  .status-filter-select {
+    min-width: 110px;
+    font-size: 0.8125rem;
+  }
+
+  /* Compact create button */
+  .scheduler-create-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Narrower time column on mobile */
+  .time-column {
+    width: 56px;
+  }
+
+  .time-column-spacer {
+    height: 40px;
+  }
+
+  .week-header-spacer {
+    width: 56px;
+  }
+
+  .view-header-content {
+    margin-left: 56px;
+  }
+
+  .time-slot-label span {
+    font-size: 0.625rem;
+  }
+
+  .time-slot-label {
+    padding-right: 0.375rem;
+  }
+
+  /* Narrower columns for day/tech views */
+  .day-column {
+    min-width: 90px;
+  }
+
+  .tech-column {
+    min-width: 120px;
+  }
+
+  /* Smaller column header */
+  .column-header {
+    padding: 0.375rem;
+  }
+
+  .column-header-text {
+    font-size: 0.75rem;
+  }
+
+  .tech-header-text {
+    font-size: 0.75rem;
+  }
+
+  /* Compact appointment text */
+  .appointment-content {
+    padding: 0.25rem 0.375rem;
+  }
+
+  .appointment-client {
+    font-size: 0.75rem;
+  }
+
+  .appointment-badge-text {
+    font-size: 0.5625rem;
+  }
+
+  .appointment-time {
+    font-size: 0.625rem;
+  }
+
+  .appointment-status {
+    font-size: 0.625rem;
+  }
+
+  /* Modals: full-width on mobile */
+  .modal-content {
+    max-width: 100%;
+    margin: 0 0.5rem;
+    max-height: 95vh;
+    border-radius: var(--scheduler-border-radius-xl);
+  }
+
+  .modal-content.large {
+    max-width: 100%;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.125rem;
+  }
+
+  /* Side panel: full width on mobile */
+  .side-panel {
+    width: 100%;
+  }
+
+  /* Form layout on mobile */
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-selector {
+    grid-template-columns: 1fr;
+  }
+
+  /* Job builder stacks on mobile */
+  .job-builder {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .job-builder-fields {
+    flex-direction: column;
+  }
+
+  /* Larger touch targets for buttons */
+  .scheduler-nav-btn {
+    padding: 0.625rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .view-toggle-btn {
+    padding: 0.5rem 0.75rem;
+    min-height: 36px;
+  }
+
+  /* Date picker: full-width */
+  .datepicker-modal {
+    max-width: 100%;
+    margin: 0 0.5rem;
+  }
+
+  /* Buttons: ensure min touch target */
+  .btn {
+    min-height: 44px;
+    padding: 0.625rem 1rem;
+  }
+
+  .modal-close-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Grid slot touch target */
+  .grid-slot {
+    min-height: 44px;
+  }
+}
+
+/* ============================================
+   Responsive: Extra-small screens (≤ 480px)
+   ============================================ */
+@media (max-width: 480px) {
+  .scheduler-header {
+    padding: 0.375rem 0.5rem;
+  }
+
+  .scheduler-nav-label {
+    min-width: 120px;
+    font-size: 0.8125rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .scheduler-controls {
+    gap: 0.375rem;
+  }
+
+  /* Even narrower time column */
+  .time-column {
+    width: 44px;
+  }
+
+  .week-header-spacer {
+    width: 44px;
+  }
+
+  .view-header-content {
+    margin-left: 44px;
+  }
+
+  .time-slot-label span {
+    font-size: 0.5625rem;
+  }
+
+  /* Week view columns scroll horizontally */
+  .day-column {
+    min-width: 80px;
+  }
+
+  .tech-column {
+    min-width: 100px;
+  }
+
+  .column-header-text {
+    font-size: 0.6875rem;
+  }
+
+  /* Smaller appointment blocks */
+  .appointment-client {
+    font-size: 0.6875rem;
+  }
+
+  .appointment-badge-text {
+    font-size: 0.5rem;
+  }
+
+  .appointment-badge-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+  }
+
+  /* View toggle compact */
+  .view-toggle-btn {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.75rem;
+  }
+
+  /* Full-screen modals on very small screens */
+  .modal-backdrop {
+    padding: 0.5rem;
+  }
+
+  .modal-content {
+    margin: 0;
+    border-radius: var(--scheduler-border-radius-lg);
+    max-height: 100vh;
+  }
+
+  .datepicker-modal {
+    margin: 0;
+  }
+}
+
+/* ============================================
+   Touch device hover/active overrides
+   ============================================ */
+@media (hover: none) {
+  .appointment-block:hover {
+    z-index: 10;
+  }
+
+  .grid-slot:hover {
+    background-color: transparent;
+  }
+
+  .appointment-block:active {
+    z-index: 20;
+    opacity: 0.85;
+  }
+
+  .grid-slot:active {
+    background-color: var(--scheduler-bg-hover);
+  }
+
+  .scheduler-nav-btn:active {
+    background-color: var(--scheduler-bg-hover);
+    color: var(--scheduler-text-secondary);
+  }
+}

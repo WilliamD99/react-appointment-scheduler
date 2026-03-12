@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragOverlay, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type {
     SchedulerProps,
     Appointment,
@@ -212,14 +212,19 @@ export function Scheduler({
     const [createModalEndTime, setCreateModalEndTime] = useState<Date | null>(null);
     const [createModalTechnicianId, setCreateModalTechnicianId] = useState<string | null>(null);
 
-    // Configure pointer sensor with activation constraint
-    // Prevents accidental drags from clicks
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8, // 8px movement before drag starts
+                distance: 8,
             },
-        })
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 200,
+                tolerance: 8,
+            },
+        }),
+        useSensor(KeyboardSensor)
     );
 
     // Handle appointment click - combines internal state and external callback
@@ -348,7 +353,7 @@ export function Scheduler({
             onDragEnd={handleDragEnd}
             modifiers={[snapModifier]}
         >
-            <div className="scheduler-container">
+            <div className={`scheduler-container${draggingId ? ' is-dragging' : ''}`}>
                 {/* Header with navigation and controls */}
                 <header className="scheduler-header">
                     {/* Navigation */}

@@ -168,8 +168,10 @@ export interface NewAppointmentData {
   status?: AppointmentStatus;
   startTime: Date;
   duration: number;
-  email: string;
-  phone?: string;
+  /** Optional email for client contact */
+  email?: string;
+  /** Required phone number for client contact */
+  phone: string;
   notes?: string;
 }
 

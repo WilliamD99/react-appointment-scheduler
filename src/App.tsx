@@ -232,10 +232,10 @@ export default function App() {
                 serviceType: primaryServiceType,
                 startTime: appointmentData.startTime,
                 duration: appointmentData.duration,
-                email: appointmentData.email,
+                email: appointmentData.email ?? '',
                 status: appointmentData.status ?? 'pending',
                 ...(primaryArtist && { artist: primaryArtist }),
-                ...(appointmentData.phone && { phone: appointmentData.phone }),
+                phone: appointmentData.phone,
                 ...(appointmentData.notes && { notes: appointmentData.notes }),
             };
 

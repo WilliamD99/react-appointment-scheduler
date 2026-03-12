@@ -8,8 +8,8 @@ import type { ServiceType, NewAppointmentData, TechnicianServices, Service, Tech
  * - Client name
  * - Jobs (each job = service + technician pair)
  * - Start time
- * - Email (required)
- * - Phone (optional)
+ * - Email (optional)
+ * - Phone (required)
  * - Notes (optional)
  */
 
@@ -244,8 +244,8 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
     e.preventDefault();
     setSubmitError('');
 
-    if (!clientName.trim() || !date || !time || !email.trim()) {
-      setSubmitError('Please fill in all required fields (client name, date, time, and email).');
+    if (!clientName.trim() || !date || !time || !phone.trim()) {
+      setSubmitError('Please fill in all required fields (client name, date, time, and phone number).');
       return;
     }
 
@@ -270,8 +270,8 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
       jobs: jobsData,
       startTime,
       duration: totalDuration,
-      email: email.trim(),
-      ...(phone.trim() && { phone: phone.trim() }),
+      phone: phone.trim(),
+      ...(email.trim() && { email: email.trim() }),
       ...(notes.trim() && { notes: notes.trim() }),
     };
 
@@ -456,29 +456,29 @@ export const CreateAppointmentModal = memo(function CreateAppointmentModal({
 
           {/* Email */}
           <div className="form-group">
-            <label htmlFor="email" className="form-label">
-              Email <span className="required">*</span>
-            </label>
+            <label htmlFor="email" className="form-label">Email (optional)</label>
             <input
               type="email"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="client@example.com"
-              required
               className="form-input"
             />
           </div>
 
           {/* Phone */}
           <div className="form-group">
-            <label htmlFor="phone" className="form-label">Phone Number (optional)</label>
+            <label htmlFor="phone" className="form-label">
+              Phone Number <span className="required">*</span>
+            </label>
             <input
               type="tel"
               id="phone"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(555) 123-4567"
+              required
               className="form-input"
             />
           </div>

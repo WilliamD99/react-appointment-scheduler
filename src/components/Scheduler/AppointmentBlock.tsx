@@ -71,18 +71,18 @@ export const AppointmentBlock = memo(function AppointmentBlock({
   const statusClassName = `appointment-status-${appointmentStatus}`;
   const statusLabel = appointmentStatus.charAt(0).toUpperCase() + appointmentStatus.slice(1);
 
-  // Build transform style for drag preview
   const style: React.CSSProperties = {
     position: 'absolute',
     top: `${top}px`,
     left: `${leftPosition}%`,
     width: `${laneWidth}%`,
-    height: `${Math.max(height - gapSize, 30)}px`, // Minimum height of 30px
+    height: `${Math.max(height - gapSize, 30)}px`,
     zIndex: isCurrentlyDragging ? 100 : isSelected ? 50 : 10,
     transform: transform
       ? `translate(${transform.x}px, ${transform.y}px)`
       : undefined,
     pointerEvents: 'auto',
+    touchAction: 'none',
     ['--block-color' as string]: blockColor,
   };
 
